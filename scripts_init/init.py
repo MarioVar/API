@@ -7,10 +7,13 @@
 import pandas as pd 
 from sklearn import linear_model
 from sklearn.model_selection import train_test_split
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 from sklearn.impute import SimpleImputer
 import numpy as np
 from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import classification_report, confusion_matrix
 
 
 def read_csv(csv_file):
@@ -34,14 +37,39 @@ def read_csv(csv_file):
 		y.fillna(y.mean(),inplace=True)
 
 
-	X_train, X_test, y_train, y_test = train_test_split(subdataframe, y, test_size=0.2)
+	X_train, X_test, y_train, y_test = train_test_split(subdataframe, y, test_size=0.2 ,random_state=2 , shuffle=True);
 	lm = linear_model.LinearRegression()
 	model = lm.fit(X_train, y_train)
 	y_pred = lm.predict(X_test)
 	print(mean_squared_error(y_test, y_pred))
+	print("R2");
 	print(r2_score(y_test,y_pred))
-#calcola statistiche
+	for i in range(0,6):
+		plt.scatter(subdataframe[: , i], y);
+	plt.legend(['min_rsrp' , 'max_rsrp','median_rsrp' , 'min_rssi', 'max_rssi' , 'median_rssi']);
+	plt.show();	
+	for i in range(0,6):
+		plt.scatter(X_test[: , i], y_test , linewidth=3);
+		plt.plot(X_test , y_pred, color='green' , linewidth=3);
+	plt.legend(['min_rsrp' , 'max_rsrp','median_rsrp' , 'min_rssi', 'max_rssi' , 'median_rssi' ,'y_pred']);
+	plt.show();	
+	#calcola statistiche
+
+	#K-neighbors regressor
+	scaler = StandardScaler();
+	scaler.fit(X_train);
+	X_train_scaled = scaler.transform(X_train);
+	X_test_scaled = scaler.transform(X_test);
+	neigh = KNeighborsRegressor(n_neighbors=100 , metric='euclidean');
+	neigh.fit(X_train_scaled , y_train);
+	y_pred_neighbor = neigh.predict(X_test_scaled);
+	print("R2-Neighbor");
+	print(r2_score(y_test,y_pred_neighbor));
 
 
 
-read_csv("/home/mario/API/QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extraction.csv")
+
+
+
+
+read_csv("/home/andrea/QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extraction.csv")
