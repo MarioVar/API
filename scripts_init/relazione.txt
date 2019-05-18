@@ -1,0 +1,27 @@
+18 Maggio
+Al momento ciò che è stato fatto è prelevare le feature del dataset con i metadati che vanno da min_rsrp a median_rssi. Anzitutto abbiamo notato che ci sono dei missing values nelle misure di rsrp. 
+Quindi ci siamo posti il problema di come gestire questi missing values. Facendo un istogramma delle 3 distribuzioni si è notato che sono gaussiane e di conseguenza si è preferito mettere al posto dei missing value il valore medio. 
+Qui sorge il primo problema: 
+1)Cosa sono questi valori mancanti?
+2)Se rappresentassero ad esempio dei momenti in cui il treno ad esempio è sotto una galleria e quindi il segnale non arriva all'antenna, sarebbe giusto sostituire il missing value con un valore medio oppure significherebbe "idealizzare il problema" ipotizzando che non vi siano delle galerie? 
+
+Quindi in conclusione:
+E' giusto sotiture con la media o mettendo un valore nullo in questi missing values?
+
+Al momento abbiamo sostituito con la media i missing values.
+
+Abbiamo quindi splittato il nostro data-set in training set e data-set (20% - 80%).
+Una volta splittato il dataset abbiamo provato a fare un primo regressore lineare.
+DOpo la fase di training e di prediction abbiamo ovviamente ottenuto un R^2 molto basso, quindi la bontà del nostro fitting è molto bassa.
+
+---Bisogna ora trovare un modo per far notare che la regressione non è buona graficamente-------------
+
+Successivamente abbiamo provato a cambiare il modello regressivo usando un k-nearest-neighbor regressor.
+Poichè il KNN utilizza delle distanze effettivamente per valutare come fare il fitting del valore è stato opportuno scalare il nostro x_train e x_test (x_train_scaled e x_test_scaled).
+Facendo la misura di R^2 il fitting è leggermente migliorato ma ancora non va bene.
+
+Passi successivi (valutate se bisogna modificare qualcosa)
+1)Cambiare il set di ferture
+2)Valutare il modello di regressione
+3)Cercare di capire se effettivamente fanno sempre schifo i nostri modelli di regressione o in alcuni contesti sono buoni.
+------------------------------------------------------------------------------------------------------
