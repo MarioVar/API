@@ -13,7 +13,6 @@ import numpy as np
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, confusion_matrix
 
 
 def read_csv(csv_file):
@@ -56,15 +55,36 @@ def read_csv(csv_file):
 	#calcola statistiche
 
 	#K-neighbors regressor
+	neighbors = list(range(10 , 1001 , 10));
 	scaler = StandardScaler();
 	scaler.fit(X_train);
 	X_train_scaled = scaler.transform(X_train);
 	X_test_scaled = scaler.transform(X_test);
-	neigh = KNeighborsRegressor(n_neighbors=100 , metric='euclidean');
-	neigh.fit(X_train_scaled , y_train);
-	y_pred_neighbor = neigh.predict(X_test_scaled);
-	print("R2-Neighbor");
-	print(r2_score(y_test,y_pred_neighbor));
+	r2 = [];
+	y_pred_neighbors = 0;
+	i=1;
+	n = 0;
+	#for n in neighbors:
+	#	neigh = KNeighborsRegressor(n_neighbors=n , metric='euclidean');
+	#	neigh.fit(X_train_scaled , y_train);
+	#	y_pred_neighbors = neigh.predict(X_test_scaled); 
+	#	r2.append(r2_score(y_test,y_pred_neighbors));
+	#print(len(neighbors));
+	#print(len(r2));
+	#plt.plot(neighbors , r2 , color = 'blue' , linewidth=3);
+	#plt.grid(True);
+	#plt.show();
+#	print(r2_score(y_test,y_pred_neighbors[n]));
+	distances = [1, 2, 3, 4, 5];
+	for p in distances:
+		neigh = KNeighborsRegressor( n_neighbors = 85 , p=p );
+		neigh.fit(X_train_scaled, y_train);
+		y_pred_neighbors = neigh.predict(	X_test_scaled	)
+		r2.append(r2_score(y_test,y_pred_neighbors));
+	plt.plot(distances , r2 , color = 'blue' , linewidth=3);
+	plt.show();
+		
+
 
 
 
