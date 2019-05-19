@@ -13,6 +13,9 @@ import numpy as np
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import GridSearchCV  
+from sklearn.tree import DecisionTreeRegressor
+
 
 def linear_reg(X_train,X_test,y_train,y_test):
 	#regressore lineare
@@ -155,6 +158,41 @@ def start_regression(dataframe,y):
 
 #	start_regression: effettua vari tipi di regressione: KNN, linear;
 
+
+#Dato un modello già tunato, il numero di splits , le feature X e l'uscita Y, se Y è continua allora Continous=True , altrimenti Continous = false
+#la seguente funzione effettua una StratifiedKFoldValidation discretizzando prima la variabile Y per effettuare la stratificazione.
+#La varibile di ritorno sarà il parametro caratteristico per indicare il fitting del modello dopo il processo di validazione
+def stratifiedKFold_validation(model , nsplits , continous , X , Y):
+	if continous==True:
+		bins = np.linspace(0,1,10);
+		Y = np.digitize(Y , bins);
+	folds = stratifiedKFold_validation(n_splits=15 , random_state=43 , shuffle= True);
+	scores = [];
+	for train_index , test_index in folds.split(X , Y):
+		X_train , X_test = X[train_index] , X[test_index];
+		Y_train , Y_test = Y[train_index] , Y[test_index];
+		model.fit(X_train, Y_train);
+		Y_predicted = model.predict(X_test);
+		scores.append(r2_score(Y_test , Y_predicted));
+	plt.plot(scores);
+	plt.show();
+	print("R2 StratifiedKFold Validation: " +np.mean(scores));
+	return np.mean(scores);
+
+#Dato un DecisionTreeRegressor , un array di interi contenente i valori possibili del max_depth , le features e le uscite del dataset la funzione effettua una grid cross 
+#validation per definire la max_depth migliore tra quelle che sono nell'array
+def Tuning_DecisionTree_MaxDepth(DecisionTree_Regressor , max_depth_array , X , Y):
+	params_dt = {'max_depth': max_depth_array}  
+	grid_dt = GridSearchCV(estimator=dt, param_grid=params_dt , scoring = 'r2', n_jobs = -1 , cv = 10);
+	X_train , X_test , Y_train , Y_test = train_test_split(X, Y , test_size = 0.2 , random_state=2 ,  shuffle = True);
+	grid_dt.fit(X_train , Y_train);  
+	return grid_dt.best_params_;
+
+def DecisionTree(X_train, X_test, Y_train , Y_test , max_depth):
+	dt = DecisionTreeRegressor(max_depth=max_depth , random_state = 42)
+	dt.fit(X_train , Y_train);
+	y_pred_DT=dt.predict(X_test);
+	return r2_score(Y_test , y_pred_DT);
 
 
 
