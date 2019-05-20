@@ -199,7 +199,7 @@ def Tuning_DecisionTree_MaxDepth(max_depth_array ,minSamples_split, X , Y):
 
 #questa va chiamata dopo che è stata chiamata la funzione precedente e sono stati tarati i parametri max_depth e min_samples_split
 def random_forest(X,Y,num_trees_vect,tuned_max_depth,tuned_min_samples_split):
-	numfeat=np.linspace(1,X.shape[1],dtype=int)
+	numfeat=np.linspace(1,X.shape[1],X.shape[1]-1,dtype=int)
 	param_grid={
 		'max_features': numfeat,
 		'n_estimators': num_trees_vect
