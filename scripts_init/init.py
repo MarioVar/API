@@ -191,36 +191,44 @@ def Tuning_DecisionTree_MaxDepth(max_depth_array ,minSamples_split, X , Y):
 	grid_dt.fit(X_train , Y_train)  
 	mxdp=grid_dt.best_params_['max_depth']
 	msp=grid_dt.best_params_['min_samples_split']
-	dt = DecisionTreeRegressor(random_state = 42,max_depth=mxdp,min_samples_split=msp)
-	dt.fit(X_train , Y_train)
-	y_pred_DT=dt.predict(X_test)
-	print(r2_score(Y_test , y_pred_DT))
+	y_pred_DT=DecisionTree(mxdp,msp,X_train, X_test, Y_train , Y_test)
+	print("R2_dt:",r2_score(Y_test , y_pred_DT),"max_depth_opt: ",mxdp,"min_samples_split_opt: ",msp)
 	return r2_score(Y_test , y_pred_DT),mxdp,msp
 
 #questa va chiamata dopo che è stata chiamata la funzione precedente e sono stati tarati i parametri max_depth e min_samples_split
-def random_forest(X,Y,num_trees_vect,tuned_max_depth,tuned_min_samples_split):
+def random_forest_tun(X,Y,num_trees_vect,tuned_max_depth,tuned_min_samples_split):
 	numfeat=np.linspace(1,X.shape[1],X.shape[1]-1,dtype=int)
 	param_grid={
 		'max_features': numfeat,
 		'n_estimators': num_trees_vect
 	}
-	print(numfeat,num_trees_vect)
 	rf=RandomForestRegressor(random_state = 42)
 	gdsc=GridSearchCV(estimator=rf,param_grid=param_grid, scoring = 'r2', n_jobs = -1 , cv = 5)
 	X_train , X_test , Y_train , Y_test = train_test_split(X, Y , test_size = 0.2 , random_state=42 ,  shuffle = True)
 	gdsc.fit(X_train , Y_train)
 	maxfeat=gdsc.best_params_['max_features']
 	ntrees=gdsc.best_params_['n_estimators']
-	print(maxfeat,ntrees)
+	print("max_features_opt_RF: ",maxfeat,"num estimators opt RF: ",ntrees)
+	y_pred_RF=RandForest(tuned_max_depth,tuned_min_samples_split,maxfeat,ntrees,X_train, X_test, Y_train , Y_test)
+	print("R2_rf: ",r2_score(Y_test , y_pred_RF))
+	return r2_score(Y_test , y_pred_RF)
+
 
 #def random_forest(X,Y,num_trees_vect,num_feature_vect):
 #	return 
 
-def DecisionTree(X_train, X_test, Y_train , Y_test , max_depth):
-	dt = DecisionTreeRegressor(max_depth=max_depth , random_state = 42)
+def DecisionTree(max_depth_opt,min_samples_split_opt,X_train, X_test, Y_train , Y_test):
+	dt = DecisionTreeRegressor(random_state = 42, max_depth=max_depth_opt,min_samples_split=min_samples_split_opt)
 	dt.fit(X_train , Y_train)
 	y_pred_DT=dt.predict(X_test)
-	return r2_score(Y_test , y_pred_DT)
+	return y_pred_DT
+
+def RandForest(max_depth_opt ,min_samples_split_opt ,max_features_opt, n_estimators_opt, X_train, X_test, Y_train , Y_test):
+	dt = RandomForestRegressor(max_depth=max_depth_opt , min_samples_split=min_samples_split_opt,
+		max_features=max_features_opt , n_estimators=n_estimators_opt , random_state = 42)
+	dt.fit(X_train , Y_train)
+	y_pred_RF=dt.predict(X_test)
+	return y_pred_RF
 
 
 
@@ -232,9 +240,11 @@ feature=['min_rsrp','max_rsrp','median_rsrp','min_rssi','max_rssi','median_rssi'
 y_label='res_dl_kbps'
 dataframe,y=get_feature(user+path,feature,y_label)
 #start_regression(dataframe,y)
-#max_depth_array=np.linspace(1,200,20,dtype=int)
-#minSamples_split=np.linspace(2,300,30,dtype=int)
-#Tuning_DecisionTree_MaxDepth(max_depth_array ,minSamples_split, dataframe , y)
+max_depth_array=np.linspace(1,200,20,dtype=int)
+minSamples_split=np.linspace(2,300,30,dtype=int)
+r2dt,depth,samples_min=Tuning_DecisionTree_MaxDepth(max_depth_array ,minSamples_split, dataframe , y)
 num_trees_vect=np.linspace(1,200,dtype=int)
-random_forest(dataframe,y,num_trees_vect,11,298)
+#depth=21
+#samples_min=279
+r2rf=random_forest_tun(dataframe,y,num_trees_vect,depth,samples_min)
 
