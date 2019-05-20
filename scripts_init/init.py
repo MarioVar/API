@@ -15,6 +15,7 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV  
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
 
 
 def linear_reg(X_train,X_test,y_train,y_test):
@@ -41,11 +42,11 @@ def KNN(X_train,X_test,y_train,y_test):
 	#print(len(r2));
 	plt.plot(neighbors , r2 , color = 'blue' , linewidth=3);
 	plt.grid(True);
-	#plt.show();
+	plt.show();
 	#get optimum K form the plot
 	max_r2,K_opt=opt_x(neighbors,r2)
-	#print("R2_opt: ",max_r2)
-	#print("K_opt: ", K_opt)
+	print("R2_opt: ",max_r2)
+	print("K_opt: ", K_opt)
 
 
 	r2 = []
@@ -56,7 +57,7 @@ def KNN(X_train,X_test,y_train,y_test):
 		y_pred_neighbors = neigh.predict(X_test)
 		r2.append(r2_score(y_test,y_pred_neighbors))
 	plt.plot(distances , r2 , color = 'blue' , linewidth=3);
-	#plt.show();
+	plt.show();
 	#get optimum K form the plot
 	max_r2,opt_distmetr=opt_x(distances,r2)
 	#print("R2_opt: ",max_r2)
@@ -181,18 +182,45 @@ def stratifiedKFold_validation(model , nsplits , continous , X , Y):
 
 #Dato un DecisionTreeRegressor , un array di interi contenente i valori possibili del max_depth , le features e le uscite del dataset la funzione effettua una grid cross 
 #validation per definire la max_depth migliore tra quelle che sono nell'array
-def Tuning_DecisionTree_MaxDepth(DecisionTree_Regressor , max_depth_array , X , Y):
-	params_dt = {'max_depth': max_depth_array}  
-	grid_dt = GridSearchCV(estimator=dt, param_grid=params_dt , scoring = 'r2', n_jobs = -1 , cv = 10);
-	X_train , X_test , Y_train , Y_test = train_test_split(X, Y , test_size = 0.2 , random_state=2 ,  shuffle = True);
-	grid_dt.fit(X_train , Y_train);  
-	return grid_dt.best_params_;
+def Tuning_DecisionTree_MaxDepth(max_depth_array ,minSamples_split, X , Y):
+	params_dt = {'max_depth': max_depth_array,'min_samples_split':minSamples_split} 
+
+	dt = DecisionTreeRegressor(random_state = 42)
+	grid_dt = GridSearchCV(estimator=dt, param_grid=params_dt , scoring = 'r2', n_jobs = -1 , cv = 5)
+	X_train , X_test , Y_train , Y_test = train_test_split(X, Y , test_size = 0.2 , random_state=42 ,  shuffle = True)
+	grid_dt.fit(X_train , Y_train)  
+	mxdp=grid_dt.best_params_['max_depth']
+	msp=grid_dt.best_params_['min_samples_split']
+	dt = DecisionTreeRegressor(random_state = 42,max_depth=mxdp,min_samples_split=msp)
+	dt.fit(X_train , Y_train)
+	y_pred_DT=dt.predict(X_test)
+	print(r2_score(Y_test , y_pred_DT))
+	return r2_score(Y_test , y_pred_DT),mxdp,msp
+
+#questa va chiamata dopo che è stata chiamata la funzione precedente e sono stati tarati i parametri max_depth e min_samples_split
+def random_forest(X,Y,num_trees_vect,tuned_max_depth,tuned_min_samples_split):
+	numfeat=np.linspace(1,X.shape[1],dtype=int)
+	param_grid={
+		'max_features': numfeat,
+		'n_estimators': num_trees_vect
+	}
+	print(numfeat,num_trees_vect)
+	rf=RandomForestRegressor(random_state = 42)
+	gdsc=GridSearchCV(estimator=rf,param_grid=param_grid, scoring = 'r2', n_jobs = -1 , cv = 5)
+	X_train , X_test , Y_train , Y_test = train_test_split(X, Y , test_size = 0.2 , random_state=42 ,  shuffle = True)
+	gdsc.fit(X_train , Y_train)
+	maxfeat=gdsc.best_params_['max_features']
+	ntrees=gdsc.best_params_['n_estimators']
+	print(maxfeat,ntrees)
+
+#def random_forest(X,Y,num_trees_vect,num_feature_vect):
+#	return 
 
 def DecisionTree(X_train, X_test, Y_train , Y_test , max_depth):
 	dt = DecisionTreeRegressor(max_depth=max_depth , random_state = 42)
-	dt.fit(X_train , Y_train);
-	y_pred_DT=dt.predict(X_test);
-	return r2_score(Y_test , y_pred_DT);
+	dt.fit(X_train , Y_train)
+	y_pred_DT=dt.predict(X_test)
+	return r2_score(Y_test , y_pred_DT)
 
 
 
@@ -203,6 +231,10 @@ path="/QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extra
 feature=['min_rsrp','max_rsrp','median_rsrp','min_rssi','max_rssi','median_rssi']
 y_label='res_dl_kbps'
 dataframe,y=get_feature(user+path,feature,y_label)
-start_regression(dataframe,y)
-
+#start_regression(dataframe,y)
+#max_depth_array=np.linspace(1,200,20,dtype=int)
+#minSamples_split=np.linspace(2,300,30,dtype=int)
+#Tuning_DecisionTree_MaxDepth(max_depth_array ,minSamples_split, dataframe , y)
+num_trees_vect=np.linspace(1,200,dtype=int)
+random_forest(dataframe,y,num_trees_vect,11,298)
 
