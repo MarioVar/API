@@ -16,7 +16,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV  
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
-
+from scipy import stats
+from sklearn.preprocessing import MinMaxScaler
 
 def linear_reg(X_train,X_test,y_train,y_test):
 	print("Start linear regressor")
@@ -125,7 +126,7 @@ def get_feature(csv_file,feature_vect,y_label):
 def dataset_split(dataframe,y):
 	X_train , X_test , Y_train , Y_test = train_test_split(dataframe, y , test_size = 0.2 , random_state=42 ,  shuffle = True)
 
-	scaler = StandardScaler();
+	scaler = MinMaxScaler();
 	scaler.fit(X_train);
 	X_train_scaled = scaler.transform(X_train);
 	X_test_scaled = scaler.transform(X_test);
@@ -137,18 +138,20 @@ def start_regression_tun(X_train, X_test, y_train, y_test):
 	#K-nearest-neighbor 
 	r2_knn,dist,K=KNN_tun(X_train,X_test,y_train,y_test)
 	print("R2_KNN: ",r2_knn,"dispance_opt: ",dist,"K_opt: ",K)
+	r2dt=0;
+	depth=0;
+	samples_min=0;
 
 	#decision tree
 	max_depth_array=np.linspace(1,200,20,dtype=int)
 	minSamples_split=np.linspace(2,300,30,dtype=int)
-	r2dt,depth,samples_min=Tuning_DecisionTree_MaxDepth(max_depth_array ,minSamples_split, 
-		dataframe , y,X_train , X_test , Y_train , Y_test)
+	r2dt,depth,samples_min=Tuning_DecisionTree_MaxDepth(max_depth_array ,minSamples_split, X_train , X_test , y_train , y_test)
 	print("R2_DT: ",r2dt,"depth_opt: ",depth,"samples_min: ",samples_min)
 
 	#random forest
 	
 	num_trees_vect=np.linspace(1,200,dtype=int)
-	r2rf,maxfeat,ntrees=random_forest_tun(dataframe,y,num_trees_vect,depth,samples_min,X_train , X_test , Y_train , Y_test)
+	r2rf,maxfeat,ntrees=random_forest_tun(num_trees_vect,depth,samples_min,X_train , X_test , y_train , y_test)
 	print("r2_rf: ",r2rf,"max_features_opt_RF: ",maxfeat,"num estimators opt RF: ",ntrees)
 
 
@@ -163,8 +166,8 @@ def start_regression(X_train, X_test, y_train, y_test):
 
 	r2lin=linear_reg(X_train, X_test, y_train, y_test)
 	r2knn=KNearestNeighbor(X_train,X_test,y_train,y_test,opt_distmetr,K_opt)
-	r2dt=DecisionTree(max_depth_opt,min_samples_split_opt,X_train, X_test, Y_train , Y_test)
-	r2rf=RandForest(max_depth_opt ,min_samples_split_opt ,max_features_opt, n_estimators_opt, X_train, X_test, Y_train , Y_test)
+	r2dt=DecisionTree(max_depth_opt,min_samples_split_opt,X_train, X_test, y_train , y_test)
+	r2rf=RandForest(max_depth_opt ,min_samples_split_opt ,max_features_opt, n_estimators_opt, X_train, X_test, y_train , y_test)
 
 	print("R2_linear_regressor: ",r2lin)
 	print("R2_Knearest_neighbor: ",r2knn)
@@ -192,23 +195,21 @@ def stratifiedKFold_validation(model , nsplits , continous , X , Y):
 
 #Dato un DecisionTreeRegressor , un array di interi contenente i valori possibili del max_depth , le features e le uscite del dataset la funzione effettua una grid cross 
 #validation per definire la max_depth migliore tra quelle che sono nell'array
-def Tuning_DecisionTree_MaxDepth(max_depth_array ,minSamples_split, X , Y,X_train , X_test , Y_train , Y_test):
+def Tuning_DecisionTree_MaxDepth(max_depth_array ,minSamples_split, X_train , X_test , Y_train , Y_test):
 	print("Start decision tree tuning parameters function")
 	params_dt = {'max_depth': max_depth_array,'min_samples_split':minSamples_split} 
-
 	dt = DecisionTreeRegressor(random_state = 42)
 	grid_dt = GridSearchCV(estimator=dt, param_grid=params_dt , scoring = 'r2', n_jobs = -1 , cv = 5)
 	grid_dt.fit(X_train , Y_train)  
 	mxdp=grid_dt.best_params_['max_depth']
 	msp=grid_dt.best_params_['min_samples_split']
-	y_pred_DT=DecisionTree(mxdp,msp,X_train, X_test, Y_train , Y_test)
+	r2=DecisionTree(mxdp,msp,X_train, X_test, Y_train , Y_test)
 	#print("R2_dt:",r2_score(Y_test , y_pred_DT),"max_depth_opt: ",mxdp,"min_samples_split_opt: ",msp)
-	return r2_score(Y_test , y_pred_DT),mxdp,msp
+	return r2,mxdp,msp
 
-#questa va chiamata dopo che è stata chiamata la funzione precedente e sono stati tarati i parametri max_depth e min_samples_split
-def random_forest_tun(X,Y,num_trees_vect,tuned_max_depth,tuned_min_samples_split,X_train , X_test , Y_train , Y_test):
+def random_forest_tun(num_trees_vect,tuned_max_depth,tuned_min_samples_split,X_train , X_test , Y_train , Y_test):
 	print("Start random forest tuning parameters function")
-	numfeat=np.linspace(1,X.shape[1],X.shape[1]-1,dtype=int)
+	numfeat=np.linspace(1,X_train.shape[1],X_train.shape[1]-1,dtype=int)
 	param_grid={
 		'max_features': numfeat,
 		'n_estimators': num_trees_vect
@@ -219,9 +220,9 @@ def random_forest_tun(X,Y,num_trees_vect,tuned_max_depth,tuned_min_samples_split
 	maxfeat=gdsc.best_params_['max_features']
 	ntrees=gdsc.best_params_['n_estimators']
 	#print("max_features_opt_RF: ",maxfeat,"num estimators opt RF: ",ntrees)
-	y_pred_RF=RandForest(tuned_max_depth,tuned_min_samples_split,maxfeat,ntrees,X_train, X_test, Y_train , Y_test)
+	r2=RandForest(tuned_max_depth,tuned_min_samples_split,maxfeat,ntrees,X_train, X_test, Y_train , Y_test)
 	#print("R2_rf: ",r2_score(Y_test , y_pred_RF))
-	return r2_score(Y_test , y_pred_RF),maxfeat,ntrees
+	return r2,maxfeat,ntrees
 
 
 
@@ -239,6 +240,35 @@ def RandForest(max_depth_opt ,min_samples_split_opt ,max_features_opt, n_estimat
 	dt.fit(X_train , Y_train)
 	y_pred_RF=dt.predict(X_test)
 	return r2_score(Y_test , y_pred_RF)
+
+def get_main_features(csv_file,main_feature,y_label):
+    	#lettura csv
+	data = pd.read_csv(csv_file)
+	#rimozione colonne che non sono numeriche
+	newdf = data.select_dtypes(exclude='object')
+	
+	#selezione feature
+	subdataframe=newdf.loc[:, main_feature]
+	y=newdf[y_label]
+
+	imputer_mean = SimpleImputer()
+	subdataframe_mean_filled = imputer_mean.fit_transform(subdataframe)
+
+	imputer_mode = SimpleImputer(strategy = 'most_frequent')
+	subdataframe_mode_filled = imputer_mode.fit_transform(subdataframe)
+
+	y_mean_filled = y
+	if np.isnan(y_mean_filled).sum()==0:
+		y_mean_filled=y_mean_filled.fillna(y_mean_filled.mean(),inplace=True)
+
+	y_mode_filled = y
+	if np.isnan(y_mode_filled).sum()==0:
+		y_mode_filled=y_mode_filled.fillna(stats.mode(y_mode_filled)[0][0],inplace=True)
+	
+
+
+	return subdataframe_mean_filled,subdataframe_mode_filled,y_mean_filled,y_mode_filled, y
+
 
 
 
@@ -259,23 +289,35 @@ def RandForest(max_depth_opt ,min_samples_split_opt ,max_features_opt, n_estimat
 
 
 if __name__=='__main__':
-	user="/home/mario/API"
+	user="/home/andrea"
 	path="/QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extraction.csv"
 
-	feature=['min_rsrp','max_rsrp','median_rsrp','min_rssi','max_rssi','median_rssi']
-	y_label='res_dl_kbps'
+	#eature=['min_rsrp','max_rsrp','median_rsrp','min_rssi','max_rssi','median_rssi']
+	#y_label='res_dl_kbps'
 
 
-	dataframe,y=get_feature(user+path,feature,y_label)
+	#dataframe,y=get_feature(user+path,feature,y_label)
 	#plot feature
 	#feature_plot(feature,subdataframe,y)
 	
-	X_train , X_test , Y_train , Y_test = dataset_split(dataframe,y)
+	#X_train , X_test , Y_train , Y_test = dataset_split(dataframe,y)
 
 
 	
 	#start_regression_tun(X_train , X_test , Y_train , Y_test)
-	start_regression(X_train , X_test , Y_train , Y_test)
+	#start_regression(X_train , X_test , Y_train , Y_test)
+
+	#SELEZIONE DI TUTTE LE FEATURE
+	main_features = ['total_meseaurement_duration' , 'dl_test_duration' , 'imsimccmnc' ,'nwmccmnc' ,  'cid_changes' , 'enodebid_changes' , 'devicemode_changes' , 'devicesubmode_changes' , 'rsrp_changes', 'rssi_changes' , 'lac_changes' , 'min_rsrp' , 'max_rsrp' , 'median_rsrp' , 'min_rssi', 'max_rssi', 'median_rssi',	'hour_of_day' ,	'day_of_week']
+	y_label = 'res_dl_kbps';
+	x_mean , x_mode , y_mean , y_mode, y = get_main_features(user+path , main_features, y_label);
+	X_train_mean , X_test_mean , Y_train , Y_test = dataset_split(x_mean,y)
+	X_train_mode , X_test_mode , Y_train , Y_test = dataset_split(x_mode,y)
+	print('-------------------- Mean---------------------------------')
+	start_regression_tun(X_train_mean , X_test_mean , Y_train , Y_test)
+	print('---------------------Mode----------------------------------')
+	start_regression_tun(X_train_mode, X_test_mode , Y_train , Y_test)
+
 
 
 	
