@@ -113,9 +113,6 @@ def get_feature(csv_file,feature_vect,y_label):
 	imputer = SimpleImputer()
 	subdataframe = imputer.fit_transform(subdataframe)
 
-	if np.isnan(y).sum()==0:
-		y.fillna(y.mean(),inplace=True)
-
 
 	return subdataframe,y
 
@@ -250,24 +247,13 @@ def get_main_features(csv_file,main_feature,y_label):
 	#selezione feature
 	subdataframe=newdf.loc[:, main_feature]
 	y=newdf[y_label]
-
 	imputer_mean = SimpleImputer()
 	subdataframe_mean_filled = imputer_mean.fit_transform(subdataframe)
 
 	imputer_mode = SimpleImputer(strategy = 'most_frequent')
 	subdataframe_mode_filled = imputer_mode.fit_transform(subdataframe)
-
-	y_mean_filled = y
-	if np.isnan(y_mean_filled).sum()==0:
-		y_mean_filled=y_mean_filled.fillna(y_mean_filled.mean(),inplace=True)
-
-	y_mode_filled = y
-	if np.isnan(y_mode_filled).sum()==0:
-		y_mode_filled=y_mode_filled.fillna(stats.mode(y_mode_filled)[0][0],inplace=True)
 	
-
-
-	return subdataframe_mean_filled,subdataframe_mode_filled,y_mean_filled,y_mode_filled, y
+	return subdataframe_mean_filled,subdataframe_mode_filled,y
 
 
 
@@ -289,7 +275,7 @@ def get_main_features(csv_file,main_feature,y_label):
 
 
 if __name__=='__main__':
-	user="/home/andrea"
+	user="/home/marco/Scrivania"
 	path="/QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extraction.csv"
 
 	#eature=['min_rsrp','max_rsrp','median_rsrp','min_rssi','max_rssi','median_rssi']
@@ -310,7 +296,7 @@ if __name__=='__main__':
 	#SELEZIONE DI TUTTE LE FEATURE
 	main_features = ['total_meseaurement_duration' , 'dl_test_duration' , 'imsimccmnc' ,'nwmccmnc' ,  'cid_changes' , 'enodebid_changes' , 'devicemode_changes' , 'devicesubmode_changes' , 'rsrp_changes', 'rssi_changes' , 'lac_changes' , 'min_rsrp' , 'max_rsrp' , 'median_rsrp' , 'min_rssi', 'max_rssi', 'median_rssi',	'hour_of_day' ,	'day_of_week']
 	y_label = 'res_dl_kbps';
-	x_mean , x_mode , y_mean , y_mode, y = get_main_features(user+path , main_features, y_label);
+	x_mean , x_mode, y = get_main_features(user+path , main_features, y_label);
 	X_train_mean , X_test_mean , Y_train , Y_test = dataset_split(x_mean,y)
 	X_train_mode , X_test_mode , Y_train , Y_test = dataset_split(x_mode,y)
 	print('-------------------- Mean---------------------------------')
