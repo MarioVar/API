@@ -35,7 +35,7 @@ def linear_reg(X_train,X_test,y_train,y_test):
 def KNN_tun(X_train,X_test,y_train,y_test):
 	#K-neighbors regressor
 	print("start K nearest neighbor tuning hyperparameters function")
-	neighbors = list(range(10 , 1001 , 10));
+	neighbors = list(range(1 , X_train.shape[0] , 10));
 	r2 = [];
 	y_pred_neighbors = 0
 	#Standardize features by removing the mean and scaling to unit variance
@@ -146,6 +146,7 @@ def start_regression_tun(X_train, X_test, y_train, y_test):
 	
 	#K-nearest-neighbor 
 	r2_knn,dist,K=KNN_tun(X_train,X_test,y_train,y_test)
+	print(1)
 	print("R2_KNN: ",r2_knn,"dispance_opt: ",dist,"K_opt: ",K)
 	r2dt=0;
 	depth=0;

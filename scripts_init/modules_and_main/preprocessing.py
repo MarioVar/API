@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import matplotlib as mpl
+mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 from scipy import stats
 from sklearn import linear_model

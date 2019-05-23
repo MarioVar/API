@@ -20,7 +20,7 @@ import regressors as rg
 import splitting as sp
 
 if __name__=='__main__':
-	user="/home/marco/Scrivania"
+	user="/home/andrea"
 	path="/QoS_RAILWAY_PATHS_REGRESSION/"
 	file_csv="QoS_railway_paths_nodeid_iccid_feature_extraction.csv"
 
