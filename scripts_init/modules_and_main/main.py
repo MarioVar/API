@@ -15,20 +15,21 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.decomposition import PCA
 from sklearn.feature_selection import SelectKBest, f_regression
+from pandas.plotting import scatter_matrix
 import preprocessing as pr
 import regressors as rg
 import splitting as sp
 
 if __name__=='__main__':
-	user="/home/andrea"
+	user="/home/marco/Scrivania"
 	path="/QoS_RAILWAY_PATHS_REGRESSION/"
 	file_csv="QoS_railway_paths_nodeid_iccid_feature_extraction.csv"
 
-	feature=['total_measurement_duration' , 'dl_test_duration' , 'imsimccmnc' ,'nwmccmnc' ,  'cid_changes' , 'enodebid_changes' , 'devicemode_changes' , 'devicesubmode_changes' , 'rsrp_changes', 'rssi_changes' , 'lac_changes' , 'min_rsrp' , 'max_rsrp' , 'median_rsrp' , 'min_rssi', 'max_rssi', 'median_rssi',	'hour_of_day' ,	'day_of_week']
+	feature_to_remove=['ts_start','ts_end','res_dl_kbps']
 	y_label='res_dl_kbps'
 
 
-	#dataframe,y=pr.get_feature(user+path+file_csv,feature,y_label)
+	#feature,dataframe,y=pr.get_feature(user+path+file_csv,feature_to_remove,y_label)
 	#plot feature
 	#pr.feature_plot(feature,dataframe,y)
 	
@@ -38,7 +39,7 @@ if __name__=='__main__':
 	#rg.start_regression(X_train , X_test , Y_train , Y_test)
 
 	#SELEZIONE DI TUTTE LE FEATURE
-	#x_mean , x_mode, y = pr.get_main_features(user+path+file_csv , main_features, y_label);
+	#x_mean , x_mode, y, main_feature_mean, main_feature_mode = pr.get_main_features(user+path+file_csv , feature_to_remove, y_label);
 	#X_train_mean , X_test_mean , Y_train , Y_test = sp.dataset_split(x_mean,y,True)
 	#X_train_mode , X_test_mode , Y_train , Y_test = sp.dataset_split(x_mode,y,True)
 
@@ -53,7 +54,7 @@ if __name__=='__main__':
 	#rg.start_regression(X_train_mode, X_test_mode , Y_train , Y_test)
 
 	#ESEMPIO UTILIZZO PCA
-	#Dataframe,y=pr.get_feature(user+path+file_csv , feature, y_label)
+	#feature,Dataframe,y=pr.get_feature(user+path+file_csv , feature_to_remove, y_label)
 	#pca_Df=pr.pca_preproc(Dataframe)
 	#X_train_mode , X_test_mode , Y_train , Y_test = sp.dataset_split(pca_Df,y,False)
 	#rg.start_regression(X_train_mode, X_test_mode , Y_train , Y_test)
@@ -63,7 +64,8 @@ if __name__=='__main__':
 	i=8
 	#print("---------------------------------------------------------")
 	#print("\nITERAZIONE: ",i)
-	x_mean, x_mode, y = pr.get_main_features(user+path+file_csv , feature , y_label, i)
+	x_mean, x_mode, y, main_feature_mean, main_feature_mode = pr.get_main_features(user+path+file_csv , feature_to_remove , y_label, i)
+	scatter_matrix(x_mean)	
 	X_train_mean , X_test_mean , Y_train , Y_test = sp.dataset_split(x_mean,y,False)
 	X_train_mode , X_test_mode , Y_train , Y_test = sp.dataset_split(x_mode,y,True)
 	print('-------------------- Mean---------------------------------')
