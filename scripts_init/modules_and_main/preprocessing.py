@@ -23,17 +23,19 @@ import splitting as sp
 
 #FEATURES VIEW
 
-def get_feature(csv_file,feature_vect,y_label):
+def get_feature(csv_file,feature_to_remove,y_label):
 	#lettura csv
 	data = pd.read_csv(csv_file)
+	print("ooooooooooooooooO",data.info())
+	#se il cvs è quello con le feature di mobilità
+	if len(data.columns) == 17:
+		data['duration'] = data['res_time_end_s'].sub(data['res_time_start_s'],axis=0)
 	#rimozione colonne che non sono numeriche
 	newdf = data.select_dtypes(exclude='object')
 	#print(newdf.columns)
 	#selezione feature
 	feature_vect = newdf.columns
-	feature_vect = feature_vect.drop('res_dl_kbps')
-	feature_vect = feature_vect.drop('ts_start')
-	feature_vect = feature_vect.drop('ts_end')
+	feature_vect = feature_vect.drop(feature_to_remove)
 	subdataframe=newdf.loc[:, feature_vect]
 	y=newdf[y_label]
 	print(subdataframe.info())
@@ -43,7 +45,7 @@ def get_feature(csv_file,feature_vect,y_label):
 	subdataframe = imputer.fit_transform(subdataframe)
 	print(subdataframe.shape)
 
-	return subdataframe,y
+	return feature_vect,subdataframe,y
 
 #scatter plot delle feature e salva le figure -> in: 1. vettore feature name ( per le etichette del plot) 2. dataframe 
 def feature_plot(feature_vect,dataframe_x,y):
@@ -56,16 +58,19 @@ def feature_plot(feature_vect,dataframe_x,y):
 
 #MAIN FEATURES EXTRACTION
 
-def get_main_features(csv_file,main_feature,y_label,i):
+def get_main_features(csv_file,feature_to_remove,y_label,i):
     	#lettura csv
 	data = pd.read_csv(csv_file)
+	#se il cvs è quello con le feature di mobilità
+	if len(data.columns) == 17:
+		data['duration'] = data['res_time_end_s'].sub(data['res_time_start_s'],axis=0)
+
 	#rimozione colonne che non sono numeriche
 	newdf = data.select_dtypes(exclude='object')
 
 	main_feature = newdf.columns
-	main_feature = main_feature.drop('res_dl_kbps')
-	main_feature = main_feature.drop('ts_start')
-	main_feature = main_feature.drop('ts_end')
+	main_feature = main_feature.drop(feature_to_remove)
+	
 
 	#selezione features principali
 	subdataframe=newdf.loc[:,main_feature]
@@ -116,7 +121,7 @@ def get_main_features(csv_file,main_feature,y_label,i):
 	print("Mode Selected Columns: ",k_best_features_mode_filled.columns)
 	print("VALORI k_best_features_mode_filled: ", k_best_features_mode_filled)	
 
-	return k_best_features_mean_filled,k_best_features_mode_filled,y
+	return k_best_features_mean_filled,k_best_features_mode_filled,y,k_best_features_mean_filled.columns,k_best_features_mode_filled.columns
 
 #FUNZIONI DI SCALING
 
