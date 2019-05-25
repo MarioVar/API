@@ -5,7 +5,7 @@ from splitting import dataset_split
 from preprocessing import get_feature 
 from preprocessing import pca_preproc
 from splitting import dataset_split
-from regressors import start_regression_tun
+from regressors import start_regression
 #DATASET DISCRIMINATO PER ROTTA IN INGRESSO
 #def get_dataset_splittedby_route(route):
 #	path_csv="/home/andrea/QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_latlong_nsb_gps_segment_mapping_mobility_apu2.csv"
@@ -96,7 +96,6 @@ def get_all_routes(path):
 	data = pd.read_csv(path)
 	new_data =list(set(data['route_id'])) 
 	dict = {}
-	print("OOOOOOOOOOOOOOOOOOOOOOOOO")
 	for index, i in data.iterrows():
 		if i['route_id']  not in dict:
 			print(i['route_id'])
@@ -125,18 +124,18 @@ def spatial_splitting():
 
 
 dataframe_divided_by_routedesc , dataframe_divided_by_routeid, routes=spatial_splitting()
-feature= ['nodeid','iccid_x','res_time_start_s','res_time_end_s','gps_lat','gps_long','gps_speed','res_ul_throughput_kbps','res_rtt_tcp_payload_client_ns','res_rtt_tcp_payload_server_ns','apu','route_id','segment_id','segment_lat','segment_long','route_desc','ts_start','ts_end','iccid_y','total_measurement_duration','dl_test_duration','imsimccmnc','nwmccmnc','cid_changes','enodebid_changes','devicemode_changes','devicesubmode_changes','rsrp_changes','rssi_changes','lac_changes','min_rsrp','max_rsrp','median_rsrp','min_rssi','max_rssi','median_rssi','hour_of_day','day_of_week']
+feature= ['res_dl_kbps' , 'res_dl_throughput_kbps', 'res_time_start_s','res_time_end_s', 'ts_start', 'ts_end']
 y_label='res_dl_kbps'
 for i in routes:
 	print(routes[i])
 	filename = routes[i] + ".csv"
 	print(filename)
 	fullname = os.path.join('/home/andrea/gruppo3/API/scripts_init'+'/spatial_datasets/', filename)
-	dataframe,y=get_feature(fullname, feature , y_label)
+	feature_vect, dataframe,y=get_feature(fullname, feature , y_label)
 	if dataframe.shape[0]>100:
 		x_mean=pca_preproc(dataframe)
 		X_train_mean , X_test_mean , Y_train , Y_test = dataset_split(x_mean,y,False)
-		start_regression_tun(X_train_mean , X_test_mean, Y_train, Y_test)
+		start_regression(X_train_mean , X_test_mean, Y_train, Y_test)
 
 
 
