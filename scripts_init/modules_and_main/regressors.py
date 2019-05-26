@@ -121,7 +121,7 @@ def random_forest_tun(num_trees_vect,tuned_max_depth,tuned_min_samples_split,X_t
 	gdsc=GridSearchCV(estimator=rf,param_grid=param_grid, scoring = 'r2', n_jobs = -1 , cv = 5)
 	gdsc.fit(X_train , Y_train)
 	ntrees=gdsc.best_params_['n_estimators']
-	#print("num estimators opt RF: ",ntrees)
+	#print("num estimatmarors opt RF: ",ntrees)
 	r2=RandForest(tuned_max_depth,tuned_min_samples_split,ntrees,X_train, X_test, Y_train , Y_test)
 	#print("R2_rf: ",r2_score(Y_test , y_pred_RF))
 
@@ -197,6 +197,11 @@ def start_regression(X_train, X_test, y_train, y_test):
 	print("R2_Knearest_neighbor: ",r2knn)
 	print("R2_decision_tree: ",r2dt)
 	print("R2_Random_forest: ",r2rf)
-
+	dict={}
+	dict.update({'R2_linear_regressor' , r2lin})
+	dict.update({'R2_Knearest_neighbor' , r2knn})
+	dict.update({'R2_decision_tree' , r2dt})
+	dict.update({'R2_Random_forest' , r2rf})
+	return dict
 
 
