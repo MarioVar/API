@@ -144,29 +144,42 @@ def RandForest(max_depth_opt ,min_samples_split_opt, n_estimators_opt, X_train, 
 
 def start_regression_tun(X_train, X_test, y_train, y_test):
 	
+	knn_dict = {}
 	#K-nearest-neighbor 
 	r2_knn,dist,K=KNN_tun(X_train,X_test,y_train,y_test)
-	print(1)
-	print("R2_KNN: ",r2_knn,"dispance_opt: ",dist,"K_opt: ",K)
+	knn_dict.update({'r2' : r2_knn})
+	knn_dict.update({'metrics' : dist})
+	knn_dict.update({'k' : K})
+	print("R2_KNN: ",r2_knn,"distance_opt: ",dist,"K_opt: ",K)
+
 	r2dt=0;
 	depth=0;
 	samples_min=0;
 
 	#decision tree
+	dt_dict = {}
 	max_depth_array=np.linspace(1,200,20,dtype=int)
 	minSamples_split=np.linspace(2,300,30,dtype=int)
 	r2dt,depth,samples_min=Tuning_DecisionTree_MaxDepth(max_depth_array ,minSamples_split, X_train , X_test , y_train , y_test)
+	dt_dict.update({'r2' : r2dt})
+	dt_dict.update({'depth' : depth})
+	dt_dict.update({'samples' : samples_min})
 	print("R2_DT: ",r2dt,"depth_opt: ",depth,"samples_min: ",samples_min)
 
+
 	#random forest
+	rf_dict = {}
 	num_trees_vect=np.linspace(1,200,dtype=int)
 	r2rf,ntrees=random_forest_tun(num_trees_vect,depth,samples_min,X_train , X_test , y_train , y_test)
+	rf_dict.update({'r2' : r2rf})
+	rf_dict.update({'trees' : ntrees})
 	print("r2_rf: ",r2rf,"num estimators opt RF: ",ntrees)
+	return knn_dict , dt_dict, rf_dict
 
 
 #FUNZIONE CHE AVVIA IL PROCESSO DI REGRESSIONE - DA ESEGUIRE QUANDO SI CONOSCONO GLI IPERPARAMETRI
 
-def start_regression(X_train, X_test, y_train, y_test):
+def start_regression(X_train, X_test, y_train, y_test , knn_dict , dt_dict , rf_dict):
 	#iperparametri relativi a tutte le feature_andrea con mode filling
 	#n_estimators_opt=200
 	#max_depth_opt=11
@@ -182,26 +195,26 @@ def start_regression(X_train, X_test, y_train, y_test):
 	#K_opt=10
 
 	#iperparametri KBestFeature con k=8 minmaxscale (zscale)
-	n_estimators_opt= 195 #(195)
+	n_estimators_opt= 167 #(195)
 	max_depth_opt=11 #(11)
-	min_samples_split_opt=217 #(217)
+	min_samples_split_opt=228 #(217)
 	opt_distmetr=1 #(2)
-	K_opt=30 #(30)
+	K_opt=41 #(30)
 
 	r2lin=linear_reg(X_train, X_test, y_train, y_test)
-	r2knn=KNearestNeighbor(X_train,X_test,y_train,y_test,opt_distmetr,K_opt)
-	r2dt=DecisionTree(max_depth_opt,min_samples_split_opt,X_train, X_test, y_train , y_test)
-	r2rf=RandForest(max_depth_opt ,min_samples_split_opt, n_estimators_opt, X_train, X_test, y_train , y_test)
+	r2knn=KNearestNeighbor(X_train,X_test,y_train,y_test,knn_dict['metric'], knn_dict['k'] )
+	r2dt=DecisionTree(dt_dict['depth'],dt_dict['samples'],X_train, X_test, y_train , y_test, dt_dict)
+	r2rf=RandForest(dt_dict['depth'],dt_dict['samples'],rf_dict['trees'], X_train, X_test, y_train , y_test, rf_dict)
 
 	print("R2_linear_regressor: ",r2lin)
 	print("R2_Knearest_neighbor: ",r2knn)
 	print("R2_decision_tree: ",r2dt)
 	print("R2_Random_forest: ",r2rf)
 	dict={}
-	dict.update({'R2_linear_regressor' , r2lin})
-	dict.update({'R2_Knearest_neighbor' , r2knn})
-	dict.update({'R2_decision_tree' , r2dt})
-	dict.update({'R2_Random_forest' , r2rf})
+	dict.update({'R2_linear_regressor' : r2lin})
+	dict.update({'R2_Knearest_neighbor' : r2knn})
+	dict.update({'R2_decision_tree' : r2dt})
+	dict.update({'R2_Random_forest' : r2rf})
 	return dict
 
 

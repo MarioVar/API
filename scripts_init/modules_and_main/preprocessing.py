@@ -10,7 +10,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn import preprocessing
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import RobustScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import GridSearchCV  
 from sklearn.tree import DecisionTreeRegressor
@@ -25,7 +25,9 @@ import splitting as sp
 
 def get_feature(csv_file,feature_to_remove,y_label):
 	#lettura csv
+	print("eccooo")
 	data = pd.read_csv(csv_file)
+	print(data)
 	print("ooooooooooooooooO",data.info())
 	#se il cvs è quello con le feature di mobilità
 	if len(data.columns) == 17:
@@ -44,7 +46,6 @@ def get_feature(csv_file,feature_to_remove,y_label):
 	imputer = SimpleImputer()
 	subdataframe = imputer.fit_transform(subdataframe)
 	print(subdataframe.shape)
-
 	return feature_vect,subdataframe,y
 
 #scatter plot delle feature e salva le figure -> in: 1. vettore feature name ( per le etichette del plot) 2. dataframe 

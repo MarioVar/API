@@ -21,7 +21,7 @@ import regressors as rg
 import splitting as sp
 
 if __name__=='__main__':
-	user="/home/marco/Scrivania"
+	user="/home/andrea"
 	path="/QoS_RAILWAY_PATHS_REGRESSION/"
 	file_csv="QoS_railway_paths_nodeid_iccid_feature_extraction.csv"
 
@@ -61,14 +61,23 @@ if __name__=='__main__':
 	
 	#ESEMPIO UTILIZZO SELECT K BEST (già testato ---> K = i = 8)
 	#for i in range(1,len(feature)+1):
-	i=8
+	i=3
 	#print("---------------------------------------------------------")
 	#print("\nITERAZIONE: ",i)
 	x_mean, x_mode, y, main_feature_mean, main_feature_mode = pr.get_main_features(user+path+file_csv , feature_to_remove , y_label, i)
-	scatter_matrix(x_mean)	
+	scatter_matrix(x_mean)
 	X_train_mean , X_test_mean , Y_train , Y_test = sp.dataset_split(x_mean,y,False)
-	X_train_mode , X_test_mode , Y_train , Y_test = sp.dataset_split(x_mode,y,True)
-	print('-------------------- Mean---------------------------------')
-	rg.start_regression(X_train_mean , X_test_mean , Y_train , Y_test)
+	knn_dict = {}
+	dt_dict = {}
+	rf_dict = {}
+	#X_train_mode , X_test_mode , Y_train , Y_test = sp.dataset_split(x_mode,y,True)
+	knn_dict , dt_dict , rf_dict = rg.start_regression_tun(X_train_mean , X_test_mean , Y_train , Y_test)
+	print(knn_dict)
+	print(dt_dict)
+	print(rf_dict)
+	#print('-------------------- Mean---------------------------------')
+	#rg.start_regression(X_train_mean , X_test_mean , Y_train , Y_test)
+	sp.stratifiedKFold_validation(True , x_mean , y, knn_dict , dt_dict , rf_dict)
 	print('---------------------Mode----------------------------------')
-	rg.start_regression(X_train_mode, X_test_mode , Y_train , Y_test)
+	#rg.start_regression(X_train_mode, X_test_mode , Y_train , Y_test)
+	sp.stratifiedKFold_validation(True , x_mode , y, knn_dict , dt_dict , rf_dict)
