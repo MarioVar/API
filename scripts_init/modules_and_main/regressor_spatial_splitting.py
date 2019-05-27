@@ -46,7 +46,7 @@ from regressors import start_regression
 #spaltial_splitting()
 
 def get_nodeid_by_route(route_id):
-	path_csv="/home/andrea/QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_latlong_nsb_gps_segment_mapping_mobility_apu2.csv"
+	path_csv="../QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_latlong_nsb_gps_segment_mapping_mobility_apu2.csv"
 	dataapu = pd.read_csv(path_csv)
 	data2_single_route= dataapu[dataapu['route_id']==route_id]
 #	nodes = list(dataframe_route[['nodeid']])
@@ -106,7 +106,7 @@ def get_all_routes(path):
 #effettua uno splitting basato su rotte , ritorna un dizionario la cui chiave è il nome della route , un dizionario la cui chiave è l'id della rotta,
 #il dizionario che associa al route_id il nome della rotta
 def spatial_splitting():
-	path_csv='/home/andrea/QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_latlong_nsb_gps_segment_mapping_mobility_apu2.csv'
+	path_csv='../QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_latlong_nsb_gps_segment_mapping_mobility_apu2.csv'
 	routes = {}
 	routes = get_all_routes(path_csv)
 	print(routes)
@@ -118,7 +118,7 @@ def spatial_splitting():
 		dataframe_divided_by_routeid.update({i : get_nodeid_by_route(i)})
 		filename = routes[i] + ".csv"
 		print(filename)
-		fullname = os.path.join('/home/andrea/gruppo3/API/scripts_init'+'/spatial_datasets/', filename)
+		fullname = os.path.join('../QoS_RAILWAY_PATHS_REGRESSION'+'/', filename)
 		dataframe_divided_by_routeid[i].to_csv(fullname)
 	return dataframe_divided_by_routedesc , dataframe_divided_by_routeid, routes
 
@@ -130,7 +130,7 @@ for i in routes:
 	print(routes[i])
 	filename = routes[i] + ".csv"
 	print(filename)
-	fullname = os.path.join('/home/andrea/gruppo3/API/scripts_init'+'/spatial_datasets/', filename)
+	fullname = os.path.join('..'+'/QoS_RAILWAY_PATHS_REGRESSION/', filename)
 	feature_vect, dataframe,y=get_feature(fullname, feature , y_label)
 	if dataframe.shape[0]>100:
 		x_mean=pca_preproc(dataframe)

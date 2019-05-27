@@ -21,15 +21,14 @@ import regressors as rg
 import splitting as sp
 
 if __name__=='__main__':
-	user="/home/andrea"
-	path="/QoS_RAILWAY_PATHS_REGRESSION/"
+	path="../QoS_RAILWAY_PATHS_REGRESSION/"
 	file_csv="QoS_railway_paths_nodeid_iccid_feature_extraction.csv"
 
 	feature_to_remove=['ts_start','ts_end','res_dl_kbps']
 	y_label='res_dl_kbps'
 
 
-	#feature,dataframe,y=pr.get_feature(user+path+file_csv,feature_to_remove,y_label)
+	#feature,dataframe,y=pr.get_feature(path+file_csv,feature_to_remove,y_label)
 	#plot feature
 	#pr.feature_plot(feature,dataframe,y)
 	
@@ -39,7 +38,7 @@ if __name__=='__main__':
 	#rg.start_regression(X_train , X_test , Y_train , Y_test)
 
 	#SELEZIONE DI TUTTE LE FEATURE
-	#x_mean , x_mode, y, main_feature_mean, main_feature_mode = pr.get_main_features(user+path+file_csv , feature_to_remove, y_label);
+	#x_mean , x_mode, y, main_feature_mean, main_feature_mode = pr.get_main_features(path+file_csv , feature_to_remove, y_label);
 	#X_train_mean , X_test_mean , Y_train , Y_test = sp.dataset_split(x_mean,y,True)
 	#X_train_mode , X_test_mode , Y_train , Y_test = sp.dataset_split(x_mode,y,True)
 
@@ -54,7 +53,7 @@ if __name__=='__main__':
 	#rg.start_regression(X_train_mode, X_test_mode , Y_train , Y_test)
 
 	#ESEMPIO UTILIZZO PCA
-	#feature,Dataframe,y=pr.get_feature(user+path+file_csv , feature_to_remove, y_label)
+	#feature,Dataframe,y=pr.get_feature(path+file_csv , feature_to_remove, y_label)
 	#pca_Df=pr.pca_preproc(Dataframe)
 	#X_train_mode , X_test_mode , Y_train , Y_test = sp.dataset_split(pca_Df,y,False)
 	#rg.start_regression(X_train_mode, X_test_mode , Y_train , Y_test)
@@ -64,7 +63,7 @@ if __name__=='__main__':
 	i=3
 	#print("---------------------------------------------------------")
 	#print("\nITERAZIONE: ",i)
-	x_mean, x_mode, y, main_feature_mean, main_feature_mode = pr.get_main_features(user+path+file_csv , feature_to_remove , y_label, i)
+	x_mean, x_mode, y, main_feature_mean, main_feature_mode = pr.get_main_features(path+file_csv , feature_to_remove , y_label, i)
 	scatter_matrix(x_mean)
 	X_train_mean , X_test_mean , Y_train , Y_test = sp.dataset_split(x_mean,y,False)
 	knn_dict = {}
