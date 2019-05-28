@@ -6,6 +6,8 @@ from preprocessing import get_feature
 from preprocessing import pca_preproc
 from splitting import dataset_split
 from regressors import start_regression
+
+
 #DATASET DISCRIMINATO PER ROTTA IN INGRESSO
 #def get_dataset_splittedby_route(route):
 #	path_csv="/home/andrea/QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_latlong_nsb_gps_segment_mapping_mobility_apu2.csv"
@@ -124,20 +126,27 @@ def spatial_splitting():
 
 
 dataframe_divided_by_routedesc , dataframe_divided_by_routeid, routes=spatial_splitting()
-feature= ['res_dl_kbps' , 'res_dl_throughput_kbps', 'res_time_start_s','res_time_end_s', 'ts_start', 'ts_end']
+feature= ['res_dl_kbps' , 'nodeid', 'res_dl_throughput_kbps' , 'ts_start', 'ts_end', 'res_time_start_s'	,'res_time_end_s']
 y_label='res_dl_kbps'
 for i in routes:
 	print(routes[i])
 	filename = routes[i] + ".csv"
 	print(filename)
-	fullname = os.path.join('..'+'/QoS_RAILWAY_PATHS_REGRESSION/', filename)
-	feature_vect, dataframe,y=get_feature(fullname, feature , y_label)
-	if dataframe.shape[0]>100:
-		x_mean=pca_preproc(dataframe)
+	fullname = os.path.join('/home/andrea/gruppo3/API/scripts_init'+'/spatial_datasets/', filename)
+	x_mean , x_mode , y , main_feature_mean , main_feature_mode=get_main_features(fullname, feature , y_label, 3)
+	scatter_matrix(x_mean)
+	plt.show()
+	if x_mean.shape[0]>100:
 		X_train_mean , X_test_mean , Y_train , Y_test = dataset_split(x_mean,y,False)
-		start_regression(X_train_mean , X_test_mean, Y_train, Y_test)
-
-
+		knn_dict = {}
+		dt_dict = {}
+		rf_dict = {}
+		knn_dict , dt_dict , rf_dict = rg.start_regression_tun(X_train_mean , X_test_mean , Y_train , Y_test)
+		print(knn_dict)
+		print(dt_dict)
+		print(rf_dict)
+		print('-------------------- Mean---------------------------------')
+		sp.stratifiedKFold_validation(True , x_mean , y, knn_dict , dt_dict , rf_dict)
 
 
 
