@@ -10,6 +10,7 @@ from preprocessing import get_feature
 import json
 import string as str
 from pandas.plotting import scatter_matrix
+import matplotlib.pyplot as plt
 
 
 def get_dataset_splittedby_time(range, time):
@@ -48,7 +49,7 @@ def read_tuning_par(filename):
 	return knn_pars,dt_pars,rf_pars
 
 if __name__=='__main__':
-	step=2 #0=dataset creations 1=tuning&regression 2=regression without tuning
+	step=1 #0=dataset creations 1=tuning&regression 2=regression without tuning
 	type_tec=2 #1=PCA 2=Kbest
 	#funzione che genera i csv per lo splitting temporale, va chiamata una sola volta, poi commentata
 	if step==0:
