@@ -6,7 +6,16 @@ from preprocessing import get_feature
 from preprocessing import pca_preproc
 from splitting import dataset_split
 from regressors import start_regression
+import preprocessing as pr
+import regressors as rg
+import splitting as sp
+import matplotlib as mpl
+import regressor_spatial_splitting_k_best as rkbs
 
+mpl.use('TkAgg')
+import matplotlib.pyplot as plt
+from pandas.plotting import scatter_matrix
+import json
 
 #DATASET DISCRIMINATO PER ROTTA IN INGRESSO
 #def get_dataset_splittedby_route(route):
@@ -53,10 +62,9 @@ def get_nodeid_by_route(route_id):
 	data2_single_route= dataapu[dataapu['route_id']==route_id]
 #	nodes = list(dataframe_route[['nodeid']])
 
-	data = pd.read_csv("/home/andrea/QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extraction.csv")
-	#dataset_routeid=data.loc[data2_single_route[['nodeid','res_time_start_s','res_time_end_s']].join(data,lsuffix="The",how='inner').index , :]
-	dataset_routeid = pd.merge(data2_single_route, data,left_on=['nodeid','res_time_start_s','res_time_end_s'],right_on=['nodeid','ts_start','ts_end'],how='inner')
-	print(dataset_routeid)
+	data = pd.read_csv("../QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extraction.csv")
+	dataset_routeid=data.loc[data2_single_route[['nodeid','res_time_start_s','res_time_end_s']].join(data,lsuffix="The",how='inner').index , :]
+	#dataset_routeid = pd.merge(data2_single_route, data,left_on=['nodeid','res_time_start_s','res_time_end_s'],right_on=['nodeid','ts_start','ts_end'],how='inner')
 	return dataset_routeid
 
 
@@ -111,7 +119,6 @@ def spatial_splitting():
 	path_csv='../QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_latlong_nsb_gps_segment_mapping_mobility_apu2.csv'
 	routes = {}
 	routes = get_all_routes(path_csv)
-	print(routes)
 	j=1
 	dataframe_divided_by_routedesc = {}
 	dataframe_divided_by_routeid = {}
@@ -119,40 +126,31 @@ def spatial_splitting():
 		dataframe_divided_by_routedesc.update({routes[i] : get_nodeid_by_route(i)})
 		dataframe_divided_by_routeid.update({i : get_nodeid_by_route(i)})
 		filename = routes[i] + ".csv"
-		print(filename)
 		fullname = os.path.join('../QoS_RAILWAY_PATHS_REGRESSION'+'/', filename)
 		dataframe_divided_by_routeid[i].to_csv(fullname)
 	return dataframe_divided_by_routedesc , dataframe_divided_by_routeid, routes
 
 
-dataframe_divided_by_routedesc , dataframe_divided_by_routeid, routes=spatial_splitting()
-feature= ['res_dl_kbps' , 'nodeid', 'res_dl_throughput_kbps' , 'ts_start', 'ts_end', 'res_time_start_s'	,'res_time_end_s']
-y_label='res_dl_kbps'
-for i in routes:
-	print(routes[i])
-	filename = routes[i] + ".csv"
-	print(filename)
-	fullname = os.path.join('/home/andrea/gruppo3/API/scripts_init'+'/spatial_datasets/', filename)
-	x_mean , x_mode , y , main_feature_mean , main_feature_mode=get_main_features(fullname, feature , y_label, 3)
-	scatter_matrix(x_mean)
-	plt.show()
-	if x_mean.shape[0]>100:
-		X_train_mean , X_test_mean , Y_train , Y_test = dataset_split(x_mean,y,False)
-		knn_dict = {}
-		dt_dict = {}
-		rf_dict = {}
-		knn_dict , dt_dict , rf_dict = rg.start_regression_tun(X_train_mean , X_test_mean , Y_train , Y_test)
-		print(knn_dict)
-		print(dt_dict)
-		print(rf_dict)
-		print('-------------------- Mean---------------------------------')
-		sp.stratifiedKFold_validation(True , x_mean , y, knn_dict , dt_dict , rf_dict)
-
-
-
-
-
-
-
-
-
+if __name__=='__main__':
+	feature= ['res_dl_kbps' , 'ts_start', 'ts_end']
+	y_label='res_dl_kbps'
+	dataframe_divided_by_routedesc , dataframe_divided_by_routeid, routes = spatial_splitting()
+	for i in routes:
+		filename = routes[i] + ".csv"
+		fullname = os.path.join('../QoS_RAILWAY_PATHS_REGRESSION', filename)
+		feature_vect,subdataframe,y=pr.get_feature(fullname, feature , y_label)
+		if subdataframe.shape[0]>100:
+			print('*****************************************************************PCA1******************************************************************************')
+			principalDF = pca_preproc(subdataframe)
+			scatter_matrix(principalDF)
+			plt.show()
+			print('*****************************************************************PCA2******************************************************************************')
+			X_train_mean , X_test_mean , Y_train , Y_test = dataset_split(principalDF,y,False)
+			knn_dict = {}
+			dt_dict = {}
+			rf_dict = {}
+			knn_dict , dt_dict , rf_dict = rg.start_regression_tun(X_train_mean , X_test_mean , Y_train , Y_test)
+			rkbs.save_tuning_par("./tuning_parameter_route_regression",knn_dict , dt_dict , rf_dict,i)
+			print('-------------------- Mean---------------------------------')
+			Lin,KNN,DT,RF = sp.stratifiedKFold_validation(True , principalDF , y, knn_dict , dt_dict , rf_dict)
+			sp.save_stratified_r2("./tuning_parameter_route_stratified",Lin,KNN,DT,RF)
