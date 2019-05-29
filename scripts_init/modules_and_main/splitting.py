@@ -19,6 +19,7 @@ from sklearn.model_selection import StratifiedKFold
 import preprocessing as pr
 import regressors as rg
 import splitting as sp
+import json
 
 def dataset_split(dataframe,y,scale):
 	if scale==True:
@@ -28,6 +29,16 @@ def dataset_split(dataframe,y,scale):
 	X_train , X_test , Y_train , Y_test = train_test_split(dataframe, y , test_size = 0.2 , random_state=42 ,  shuffle = True)
 
 	return X_train , X_test , Y_train , Y_test
+
+def save_stratified_r2(filename,ln,knn,dt,rf):
+	#salvataggio parametri di tuning
+	dic={}
+	dic['stratified_ln_r2']=ln
+	dic['stratified_knn_r2']=knn
+	dic['stratified_dt_r2']=dt
+	dic['stratified_rf_r2']=rf
+	with open(filename+".json","a+") as file:
+		file.write("r2 " + json.dumps(dic) + "\n")
 
 #continous = True -> y da digitalizzare in 10 bins
 #continous = False -> y già discreta
