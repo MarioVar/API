@@ -140,17 +140,14 @@ if __name__=='__main__':
 		fullname = os.path.join('../QoS_RAILWAY_PATHS_REGRESSION', filename)
 		feature_vect,subdataframe,y=pr.get_feature(fullname, feature , y_label)
 		if subdataframe.shape[0]>100:
-			print('*****************************************************************PCA1******************************************************************************')
 			principalDF = pca_preproc(subdataframe)
 			scatter_matrix(principalDF)
 			plt.show()
-			print('*****************************************************************PCA2******************************************************************************')
 			X_train_mean , X_test_mean , Y_train , Y_test = dataset_split(principalDF,y,False)
 			knn_dict = {}
 			dt_dict = {}
 			rf_dict = {}
 			knn_dict , dt_dict , rf_dict = rg.start_regression_tun(X_train_mean , X_test_mean , Y_train , Y_test)
 			rkbs.save_tuning_par("./tuning_parameter_route_regression",knn_dict , dt_dict , rf_dict,i)
-			print('-------------------- Mean---------------------------------')
 			Lin,KNN,DT,RF = sp.stratifiedKFold_validation(True , principalDF , y, knn_dict , dt_dict , rf_dict)
 			sp.save_stratified_r2("./tuning_parameter_route_stratified",Lin,KNN,DT,RF)
