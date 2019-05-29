@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from preprocessing import get_main_features
 import os
-from splitting import dataset_split,stratifiedKFold_validation
+from splitting import dataset_split,stratifiedKFold_validation,save_stratified_r2
 from regressors import start_regression_tun
 from regressors import start_regression
 from preprocessing import pca_preproc
@@ -16,7 +16,6 @@ import matplotlib.pyplot as plt
 def get_dataset_splittedby_time(range, time):
         data =  pd.read_csv("../QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extraction.csv")
         range_data = data[data['hour_of_day'].isin(range)]  
-        print(os.getcwd())
         filename = time + ".csv"
         fullname = os.path.join('..'+'/QoS_RAILWAY_PATHS_REGRESSION/', filename)
         range_data.to_csv(fullname)
@@ -42,14 +41,13 @@ def save_tuning_par(filename,knn,dt,rf):
 def read_tuning_par(filename):
 	with open(filename+".json","r") as file:
 		data=json.loads(file.read())
-		print(data)
 		knn_pars=data['tun_knn']
 		dt_pars=data['tun_dt']
 		rf_pars=data['tun_rf']
 	return knn_pars,dt_pars,rf_pars
 
 if __name__=='__main__':
-	step=1 #0=dataset creations 1=tuning&regression 2=regression without tuning
+	step=2 #0=dataset creations 1=tuning&regression 2=regression without tuning
 	type_tec=2 #1=PCA 2=Kbest
 	#funzione che genera i csv per lo splitting temporale, va chiamata una sola volta, poi commentata
 	if step==0:
@@ -96,7 +94,8 @@ if __name__=='__main__':
 		#usando tutte le feature tranne quelle in feature_to_temove e PCA su dataset night
 		feature_vect, dataframe,y=get_feature("../QoS_RAILWAY_PATHS_REGRESSION/day.csv", feature_to_temove , y_label)
 		pca_df=pca_preproc(dataframe)
-		stratifiedKFold_validation(True , pca_df , y,knn_dict , dt_dict , rf_dict)
+		strlnkb,strknnkb,strdtkb,strrfkb=stratifiedKFold_validation(True , pca_df , y,knn_dict , dt_dict , rf_dict)
+		save_stratified_r2("stratified_r2_values_PCA_day",strlnkb,strknnkb,strdtkb,strrfkb)
 
 		#lettura parametri di tuning
 		knn_dict , dt_dict , rf_dict=read_tuning_par("Night_tunpcapar")
@@ -105,7 +104,8 @@ if __name__=='__main__':
 		#usando tutte le feature tranne quelle in feature_to_temove e PCA su dataset night
 		feature_vect, dataframe,y=get_feature("../QoS_RAILWAY_PATHS_REGRESSION/night.csv", feature_to_temove , y_label)
 		pca_df=pca_preproc(dataframe)
-		stratifiedKFold_validation(True , pca_df , y,knn_dict , dt_dict , rf_dict)
+		strlnkb,strknnkb,strdtkb,strrfkb=stratifiedKFold_validation(True , pca_df , y,knn_dict , dt_dict , rf_dict)
+		save_stratified_r2("stratified_r2_values_PCA_night",strlnkb,strknnkb,strdtkb,strrfkb)
 
 
 	elif (step==1) & (type_tec==2):
@@ -158,11 +158,14 @@ if __name__=='__main__':
 		x_mean, x_mode, y, main_feature_mean, main_feature_mode = get_main_features(
 			"../QoS_RAILWAY_PATHS_REGRESSION/night.csv" , feature_to_remove , y_label, i)
 
-		stratifiedKFold_validation(True , x_mean , y,knn_dict , dt_dict , rf_dict)
+		strlnkb,strknnkb,strdtkb,strrfkb=stratifiedKFold_validation(True , x_mean , y,knn_dict , dt_dict , rf_dict)
+		save_stratified_r2("stratified_r2_values_k_best_night",strlnkb,strknnkb,strdtkb,strrfkb)
 
 		knn_dict , dt_dict , rf_dict=read_tuning_par("Day_tunKbest")
 
 		x_mean, x_mode, y, main_feature_mean, main_feature_mode = get_main_features(
 			"../QoS_RAILWAY_PATHS_REGRESSION/day.csv" , feature_to_remove , y_label, i)
 
-		stratifiedKFold_validation(True , x_mean , y,knn_dict , dt_dict , rf_dict)
+		strlnkb,strknnkb,strdtkb,strrfkb=stratifiedKFold_validation(True , x_mean , y,knn_dict , dt_dict , rf_dict)
+
+		save_stratified_r2("stratified_r2_values_k_best_day",strlnkb,strknnkb,strdtkb,strrfkb)
