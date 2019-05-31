@@ -26,16 +26,16 @@ import json
 import string as str
 from regressor_temporal_splitting import save_tuning_par
 from regressor_temporal_splitting import read_tuning_par
+import splitting as sp
 
 
 
 if __name__=='__main__':
-	step=2 #0=dataset creations 1=tuning&regression 2=regression without tuning
+	step=2	#1=tuning&regression 2=regression without tuning
 	type_tec=1 #1=PCA 2=Kbest
 	#funzione che genera i csv per lo splitting temporale, va chiamata una sola volta, poi commentata
-	if step==0:
-		temporal_splitting()
-	elif (step==1) & (type_tec==1):
+	
+	if (step==1) & (type_tec==1):
 		#funzioni di regressione
 		feature_to_remove= ['res_dl_kbps', 'ts_start', 'ts_end']
 		y_label='res_dl_kbps'
@@ -58,7 +58,7 @@ if __name__=='__main__':
 		feature_vect, dataframe,y=get_feature("../QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extraction.csv", feature_to_remove , y_label)
 		pca_df=pca_preproc(dataframe)
 		stratified_ln_r2_pca,stratified_knn_r2_pca,stratified_dt_r2_pca,stratified_rf_r2_pca=stratifiedKFold_validation(True , pca_df , y,knn_dict , dt_dict , rf_dict)
-		save_stratified_r2("stratified_r2_values_pca",stratified_ln_r2_pca,stratified_knn_r2_pca,stratified_dt_r2_pca,stratified_rf_r2_pca)
+		save_stratified_r2("./stratified_r2_values_pca",stratified_ln_r2_pca,stratified_knn_r2_pca,stratified_dt_r2_pca,stratified_rf_r2_pca)
 	elif (step==1) & (type_tec==2):
 		i=3
 		#funzioni di regressione
@@ -78,5 +78,7 @@ if __name__=='__main__':
 		feature_to_remove= ['res_dl_kbps', 'ts_start', 'ts_end']
 		y_label='res_dl_kbps'
 		x_mean, x_mode, y, main_feature_mean, main_feature_mode = get_main_features("../QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extraction.csv" , feature_to_remove , y_label, i)
+		scatter_matrix(x_mean)
+		plt.show()
 		stratified_ln_r2_k_best,stratified_knn_r2_k_best,stratified_dt_r2_k_best,stratified_rf_r2_k_best=stratifiedKFold_validation(True , x_mean , y,knn_dict , dt_dict , rf_dict)
-		save_stratified_r2("stratified_r2_values_k_best",stratified_ln_r2_k_best,stratified_knn_r2_k_best,stratified_dt_r2_k_best,stratified_rf_r2_k_best)
+		sp.save_stratified_r2("./stratified_r2_values_k_best",stratified_ln_r2_k_best,stratified_knn_r2_k_best,stratified_dt_r2_k_best,stratified_rf_r2_k_best)
