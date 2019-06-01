@@ -30,19 +30,18 @@ def dataset_split(dataframe,y,scale):
 
 	return X_train , X_test , Y_train , Y_test
 
-def save_stratified_r2(filename,ln,knn,dt,rf):
+def save_stratified_r2(filename,knn,dt,rf):
 	#salvataggio parametri di tuning
 	dic={}
-	dic['stratified_ln_r2']=ln
-	dic['stratified_knn_r2']=knn
-	dic['stratified_dt_r2']=dt
-	dic['stratified_rf_r2']=rf
+	dic['knn_r2']=knn
+	dic['dt_r2']=dt
+	dic['rf_r2']=rf
 	with open(filename+".json","a+") as file:
 		file.write("r2 " + json.dumps(dic) + "\n")
 
 #continous = True -> y da digitalizzare in 10 bins
 #continous = False -> y già discreta
-def stratifiedKFold_validation(continous , X , Y , knn_dict , dt_dict , rf_dict):
+def stratifiedKFold_validation(X , Y,continous=True):
 	if continous==True:
 		bins = np.linspace(0,30000, 1000)
 		Y = np.digitize(Y , bins)
@@ -52,7 +51,7 @@ def stratifiedKFold_validation(continous , X , Y , knn_dict , dt_dict , rf_dict)
 		columns=X[0,1:])  # 1st row as the column names
 	if isinstance(Y,(np.ndarray)):
 		Y = pd.Series(Y)
-	folds = StratifiedKFold(n_splits=6 , random_state=42 , shuffle= True)
+	folds = StratifiedKFold(n_splits=4 , random_state=42 , shuffle= True)
 	ln_scores = []
 	knn_scores = []
 	dt_scores = []
@@ -60,25 +59,21 @@ def stratifiedKFold_validation(continous , X , Y , knn_dict , dt_dict , rf_dict)
 	for train_index , test_index in folds.split(X , Y):
 		X_train , X_test = X.loc[train_index] , X.loc[test_index]
 		Y_train , Y_test = Y.loc[train_index] , Y.loc[test_index]
-		#model.fit(X_train, Y_train);
-		#Y_predicted = model.predict(X_test);
-		#scores.append(r2_score(Y_test , Y_predicted));
-		dict = rg.start_regression(X_train , X_test , Y_train , Y_test , knn_dict , dt_dict , rf_dict)
-		ln_scores.append(dict["R2_linear_regressor"])
-		knn_scores.append(dict["R2_Knearest_neighbor"])
-		dt_scores.append(dict["R2_decision_tree"])
-		rf_scores.append(dict["R2_Random_forest"])	
-	plt.plot(ln_scores)
+		knn_dict , dt_dict, rf_dict = rg.start_regression_tun(X_train , X_test , Y_train , Y_test)
+
+		knn_scores.append(knn_dict['r2'])
+		dt_scores.append(dt_dict['r2'])
+		rf_scores.append(rf_dict['r2'])	
+	"""	
 	plt.plot(knn_scores)
 	plt.plot(dt_scores)
 	plt.plot(rf_scores)
 	plt.title('Stratified kfold results')
 	plt.xlabel('Run')
 	plt.ylabel('Rquadro')
-	plt.legend(dict.keys())
-	plt.show()
-	print("R2 StratifiedKFold Validation Linear Regression: " ,np.mean(ln_scores))
+	plt.savefig("stratified_score.fig")
+	"""
 	print("R2 StratifiedKFold Validation KNN Regression: " ,np.mean(knn_scores))
 	print("R2 StratifiedKFold Validation DT Regression: " ,np.mean(dt_scores))
 	print("R2 StratifiedKFold Validation RF Regression: " ,np.mean(rf_scores))
-	return np.mean(ln_scores), np.mean(knn_scores), np.mean(dt_scores) , np.mean(rf_scores)
+	return np.mean(knn_scores), np.mean(dt_scores) , np.mean(rf_scores)

@@ -18,6 +18,7 @@ def KnearestNeighborClassifier(X_train,X_test,y_train,y_test,k_opt,opt_metr):
 	classifier.fit(X_train, y_train) 
 	y_pred = classifier.predict(X_test)
 	calculate_stats(y_pred,y_test)
+	return y_pred
 
 
 def CreateClssificationPoblem(y,plot=False):
@@ -58,7 +59,7 @@ def main():
 
 	X_train_mean , X_test_mean , Y_train , Y_test = dataset_split(dataframe,y,True)
 
-	KnearestNeighborClassifier(X_train_mean,X_test_mean,Y_train,Y_test,k_opt=5,opt_metr=1)
+	y_pred=KnearestNeighborClassifier(X_train_mean,X_test_mean,Y_train,Y_test,k_opt=5,opt_metr=1)
 
 if __name__=='__main__':
 	main()

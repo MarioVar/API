@@ -16,7 +16,6 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.decomposition import PCA
 from sklearn.feature_selection import SelectKBest, f_regression
 import preprocessing as pr
-import regressors as rg
 import splitting as sp
 
 #REGRESSORE LINEARE
@@ -31,7 +30,7 @@ def linear_reg(X_train,X_test,y_train,y_test):
 
 
 #FUNZIONE PER IL TUNING DEGLI IPERPARAMETRI DEL REGRESSORE KNN
-
+"""
 def KNN_tun(X_train,X_test,y_train,y_test):
 	#K-neighbors regressor
 	print("start K nearest neighbor tuning hyperparameters function")
@@ -44,9 +43,9 @@ def KNN_tun(X_train,X_test,y_train,y_test):
 		neigh.fit(X_train , y_train);
 		y_pred_neighbors = neigh.predict(X_test); 
 		r2.append(r2_score(y_test,y_pred_neighbors));
-	#plt.plot(neighbors , r2 , color = 'blue' , linewidth=3);
+	plt.plot(neighbors , r2 , color = 'blue' , linewidth=3);
 	#plt.grid(True);
-	#plt.show();
+	plt.show();
 	#get optimum K form the plot
 	max_r2,K_opt=opt_x(neighbors,r2)
 	r2 = []
@@ -56,15 +55,23 @@ def KNN_tun(X_train,X_test,y_train,y_test):
 		neigh.fit(X_train, y_train)
 		y_pred_neighbors = neigh.predict(X_test)
 		r2.append(r2_score(y_test,y_pred_neighbors))
-	#plt.plot(distances , r2 , color = 'blue' , linewidth=3);
-	#plt.show();
+	plt.plot(distances , r2 , color = 'blue' , linewidth=3);
+	plt.show();
 	#get optimum K form the plot
 	max_r2,opt_distmetr=opt_x(distances,r2)
 	#print("R2_knn",max_r2,"opt_dist_metr: ", opt_distmetr,"K_opt: ",K_opt)
 	
 	return max_r2,opt_distmetr,K_opt
-
-
+"""
+def KNN_tun(X_train,X_test,y_train,y_test,k_opt_array,metrics_array):
+	params_knn = {'n_neighbors': k_opt_array,'p':metrics_array} 
+	neigh = KNeighborsRegressor()
+	grid_knn = GridSearchCV(estimator=neigh, param_grid=params_knn , scoring = 'r2', n_jobs = -1 , cv = 5)
+	grid_knn.fit(X_train , y_train)  
+	k_opt=grid_knn.best_params_['n_neighbors']
+	metrics=grid_knn.best_params_['p']
+	R2=KNearestNeighbor(X_train,X_test,y_train,y_test,metrics, k_opt)
+	return R2,metrics,k_opt
 #REGRESSORE KNN
 
 def KNearestNeighbor(X_train,X_test,y_train,y_test,opt_distmetr,K_opt):
@@ -86,7 +93,7 @@ def opt_x(X,Y):
 
 #FUNZIONE PER IL TUNING DEGLI IPERPARAMETRI DEL REGRESSORE DECISION TREE
 
-def Tuning_DecisionTree_MaxDepth(max_depth_array ,minSamples_split, X_train , X_test , Y_train , Y_test):
+def Tuning_DecisionTree(max_depth_array ,minSamples_split, X_train , X_test , Y_train , Y_test):
 	print("Start decision tree tuning parameters function")
 	params_dt = {'max_depth': max_depth_array,'min_samples_split':minSamples_split} 
 	dt = DecisionTreeRegressor(random_state = 42)
@@ -146,11 +153,13 @@ def start_regression_tun(X_train, X_test, y_train, y_test):
 	
 	knn_dict = {}
 	#K-nearest-neighbor 
-	r2_knn,dist,K=KNN_tun(X_train,X_test,y_train,y_test)
+	k_opt_array=np.linspace(1,200,200,dtype=int)
+	dist_vect=np.linspace(1,10,10,dtype=int)
+	r2_knn,dist,K=KNN_tun(X_train,X_test,y_train,y_test,k_opt_array,dist_vect)
 	knn_dict.update({'r2' : float(r2_knn)})
 	knn_dict.update({'metrics' : int(dist)})
 	knn_dict.update({'k' : int(K)})
-	print("R2_KNN: ",r2_knn,"distance_opt: ",dist,"K_opt: ",K)
+	#print("R2_KNN: ",r2_knn,"distance_opt: ",dist,"K_opt: ",K)
 
 	r2dt=0;
 	depth=0;
@@ -160,11 +169,11 @@ def start_regression_tun(X_train, X_test, y_train, y_test):
 	dt_dict = {}
 	max_depth_array=np.linspace(1,200,20,dtype=int)
 	minSamples_split=np.linspace(2,300,30,dtype=int)
-	r2dt,depth,samples_min=Tuning_DecisionTree_MaxDepth(max_depth_array ,minSamples_split, X_train , X_test , y_train , y_test)
+	r2dt,depth,samples_min=Tuning_DecisionTree(max_depth_array ,minSamples_split, X_train , X_test , y_train , y_test)
 	dt_dict.update({'r2' : float(r2dt)})
 	dt_dict.update({'depth' : int(depth)})
 	dt_dict.update({'samples' : int(samples_min)})
-	print("R2_DT: ",r2dt,"depth_opt: ",depth,"samples_min: ",samples_min)
+	#print("R2_DT: ",r2dt,"depth_opt: ",depth,"samples_min: ",samples_min)
 
 
 	#random forest
@@ -173,12 +182,12 @@ def start_regression_tun(X_train, X_test, y_train, y_test):
 	r2rf,ntrees=random_forest_tun(num_trees_vect,depth,samples_min,X_train , X_test , y_train , y_test)
 	rf_dict.update({'r2' : float(r2rf)})
 	rf_dict.update({'trees' : int(ntrees)})
-	print("r2_rf: ",r2rf,"num estimators opt RF: ",ntrees)
+	#print("r2_rf: ",r2rf,"num estimators opt RF: ",ntrees)
 	return knn_dict , dt_dict, rf_dict
 
 
 #FUNZIONE CHE AVVIA IL PROCESSO DI REGRESSIONE - DA ESEGUIRE QUANDO SI CONOSCONO GLI IPERPARAMETRI
-
+"""
 def start_regression(X_train, X_test, y_train, y_test , knn_dict , dt_dict , rf_dict):
 	#iperparametri relativi a tutte le feature_andrea con mode filling
 	#n_estimators_opt=200
@@ -217,4 +226,49 @@ def start_regression(X_train, X_test, y_train, y_test , knn_dict , dt_dict , rf_
 	dict.update({'R2_Random_forest' : r2rf})
 	return dict
 
+"""
 
+
+def regression(X,Y,stratified=True,scale=False):
+
+	r2_knn={}
+	r2_dt={}
+	r2_rf={}
+	if stratified==True:
+		r2_knn['knn_r2'] , r2_dt['dt_r2'], r2_rf['rf_r2']=sp.stratifiedKFold_validation(X , Y)
+	else:
+		X_train , X_test , Y_train , Y_test=sp.dataset_split(X,Y,scale)
+		knn_dict , dt_dict, rf_dict=start_regression_tun(X_train , X_test , Y_train , Y_test)
+		r2_knn['knn_r2']=knn_dict['r2']
+		r2_dt['dt_r2']=dt_dict['r2']
+		r2_rf['rf_r2']=rf_dict['r2']
+	
+	return r2_knn , r2_dt, r2_rf
+
+
+
+def regression_with_PREpca(n_comp,stratified_val=True,plot_matrix=False,name_dataset='Def_',csv_path="../QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extraction.csv"):
+	#funzioni di regressione
+	feature_to_remove= ['res_dl_kbps']
+	y_label='res_dl_kbps'
+
+	#usando tutte le feature tranne quelle in feature_to_remove e PCA su dataset
+	feature_vect, dataframe,y=pr.get_feature(csv_path, feature_to_remove , y_label)
+
+	pca_df=pr.pca_preproc(dataframe,n_comp)
+	if plot_matrix==True:
+		scatter_matrix(pca_df)
+		plt.savefig(str(n_comp)+"PCA_scatter.png")
+
+	knn_dict,dt_dict,rf_dict=regression(pca_df,y,stratified=True,scale=False)
+	save_tuning_par(str(name_dataset)+str(n_comp)+"_Pca full_Regression_pca_par",knn_dict,dt_dict,rf_dict)
+
+
+def regression_woth_PREkBest(n_feat,stratified_val=True,plot_matrix=False,name_dataset='Def_',csv_path="../QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extraction.csv"):
+
+	#funzioni di regressione
+	feature_to_remove= ['res_dl_kbps']
+	y_label='res_dl_kbps'
+	X, y, main_feature= pr.get_main_features(csv_path, feature_to_remove , y_label, n_feat)
+	knn_dict,dt_dict,rf_dict=regression(X,y,stratified=True,scale=False)
+	save_tuning_par(str(name_dataset)+str(n_feat)+'_kBest full_Regression',knn_dict,dt_dict,rf_dict)
