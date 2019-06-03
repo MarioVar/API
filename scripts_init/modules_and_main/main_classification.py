@@ -2,35 +2,45 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
-from preprocessing import get_main_features,pca_preproc,get_feature
-from splitting import dataset_split,stratifiedKFold_validation,save_stratified_r2
-from regressor_temporal_splitting import save_tuning_par
-from regressor_temporal_splitting import read_tuning_par
 from sklearn.neighbors import KNeighborsClassifier 
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, confusion_matrix  
-import tuning_classifiers as tun
+from sklearn.metrics import classification_report, confusion_matrix , accuracy_score  
 import itertools
+import multi_layer_perceptron as mlp
+import time 
+import os
+import regressors as rg
+import preprocessing as pr
+import splitting as sp
 
-def calculate_stats(y_pred,y_test):
-	cm = confusion_matrix(y_test, y_pred, labels = [0 , 1 , 2 , 3])
-	print(cm)  
-	print(classification_report(y_test, y_pred)) 
-	return cm 
+
+def calculate_stats(y_pred,y_test, namefig, show_fig = False):
+	cm = confusion_matrix(y_test, y_pred, labels = [0 , 1 , 2 , 3]) 
+	accuracy = accuracy_score(y_test , y_pred)
+	plot_confusion_matrix(cm , classes=[0 , 1 , 2 , 3])
+	if show_fig==True:
+		plt.show()
+	if os.path.exists("CM_"+namefig+'.png'):
+		plt.savefig("CM_"+namefig+'_{}.png'.format(int(time.time())))
+	else:
+		plt.savefig("CM_"+namefig+'.png')
+	
+	plt.savefig("CM_KNN.png")
+	return cm , accuracy
 
 def KnearestNeighborClassifier(X_train,X_test,y_train,y_test,k_opt,opt_metr):
 	classifier = KNeighborsClassifier(n_neighbors=k_opt,p=opt_metr)  
 	classifier.fit(X_train, y_train) 
 	y_pred = classifier.predict(X_test)
-	cm = calculate_stats(y_pred,y_test)
+	cm , accuracy = calculate_stats(y_pred,y_test)
 	plot_confusion_matrix (cm , classes = [0 , 1 , 2 ,3])
 	plt.show()
+	
 	return y_pred
 
-def RFClassifier(X_train,X_test,y_train,y_test,max_features = 5 , num_min_split=200 , num_estimators = 10):
+def RFClassifier(X, Y , max_features = 5 , num_min_split=200 , num_estimators = 10):
 	classifier = RandomForestClassifier( n_jobs = -1 , random_state = 42 , max_features= 'sqrt')
-	best_params =tun.tun_RF(classifier , X_train , y_train)
-	print(best_params)
+	tun.stratified_kfold_tuning(classifier , X , Y)
 	'''classifier.fit(X_train , y_train)
 	Y_pred = classifier.predict(X_test)
 	cm = calculate_stats(Y_pred , y_test)
@@ -68,7 +78,7 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     plt.xlabel('Predicted label')
     plt.tight_layout()
 
-def CreateClssificationPoblem(y,plot=False):
+def CreateClassificationProblem(y,plot=False):
 	"""
 	Low: 0-5 Mbps
 	Medium: 5-15 Mbps
@@ -76,12 +86,11 @@ def CreateClssificationPoblem(y,plot=False):
 	Very High: > 30 Mbps
 
 	"""
-	y_Mbps=y/1000
-	bins=[5,15,30,y_Mbps.max()]
+	y_Mbps=round(y/1000)
+	bins=[5,15,30,y_Mbps.max()+1]
 	y_dig = np.digitize(y_Mbps , bins)
-
 	if plot==True:
-		plt.hist(y_dig,list(set(y_dig)))
+		plt.hist(y_dig,[0 , 1 , 2 , 3 , 4])
 		plt.grid()
 		plt.xlabel("y digitalizzata")
 		plt.ylabel("numero di campioni per intervallo")
@@ -97,15 +106,20 @@ def main():
 	feature_to_remove= ['res_dl_kbps', 'ts_start', 'ts_end']
 	y_label='res_dl_kbps'
 
-	feature_vect, dataframe,y=get_feature("../QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extraction.csv",feature_to_remove , y_label)
+	feature_vect, dataframe,y=pr.get_feature("../QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extraction.csv",feature_to_remove , y_label)
 
 	#digitalizzazione uscita
-	y=CreateClssificationPoblem(y , plot = True)
+	y=CreateClassificationProblem(y , plot = True)
 
-	X_train_mean , X_test_mean , Y_train , Y_test = dataset_split(dataframe,y,True)
-	y_pred=KnearestNeighborClassifier(X_train_mean,X_test_mean,Y_train,Y_test,k_opt=5,opt_metr=1)
-	y_pred=RFClassifier(X_train_mean,X_test_mean,Y_train,Y_test)
 
+	X_train_mean , X_test_mean , Y_train , Y_test = sp.dataset_split(dataframe,y,True)
+	#y_pred=KnearestNeighborClassifier(X_train_mean,X_test_mean,Y_train,Y_test,k_opt=5,opt_metr=1)
+	#y_pred=RFClassifier(dataframe , y)
+	
+	#rg.classification_with_PREpca(11)
+	#rg.classification_with_PREkBest(3)
+ #esempio uso MLP
+	soft_values, predictions, training_soft_values, training_predictions, accuracy, fmeasure, macro_gmean, training_accuracy, training_fmeasure, training_macro_gmean=mlp.multi_layer_perceptron(X_train_mean,Y_train,X_test_mean,Y_test)    
 
 if __name__=='__main__':
 	main()

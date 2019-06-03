@@ -137,7 +137,7 @@ if __name__=='__main__':
 		feature_vect,subdataframe,y=pr.get_feature(fullname, feature , y_label)
 		if subdataframe.shape[0]>200:
 			for j in [3, 4 , 8 ,11]:
-				rg.regression_with_PREkBest(i , name_dataset = route , csv_path = fullname , spatial = True)
+				rg.regression_with_PREkBest(j , name_dataset = route , csv_path = fullname , merge = True)
 	dataframe_divided_by_routedesc , dataframe_divided_by_routeid, routes = spatial_splitting(pca = True)
 	for i in routes:
 		route= routes[i]

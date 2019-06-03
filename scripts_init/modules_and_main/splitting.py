@@ -59,7 +59,11 @@ def stratifiedKFold_validation(X , Y,continous=True):
 	for train_index , test_index in folds.split(X , Y):
 		X_train , X_test = X.loc[train_index] , X.loc[test_index]
 		Y_train , Y_test = Y.loc[train_index] , Y.loc[test_index]
-		knn_dict , dt_dict, rf_dict = rg.start_regression_tun(X_train , X_test , Y_train , Y_test)
+		if continous==True:
+			knn_dict , dt_dict, rf_dict = rg.start_regression_tun(X_train , X_test , Y_train , Y_test)
+		elif continous==False:
+			dt_dict, rf_dict = rg.start_classification_tun(X_train , X_test , Y_train , Y_test)
+
 
 		knn_scores.append(knn_dict['r2'])
 		dt_scores.append(dt_dict['r2'])
