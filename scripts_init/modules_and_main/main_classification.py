@@ -18,14 +18,8 @@ import tuning_classifiers as tun
 def calculate_stats(y_pred,y_test, namefig, show_fig = False):
 	cm = confusion_matrix(y_test, y_pred, labels = [0 , 1 , 2 , 3]) 
 	accuracy = accuracy_score(y_test , y_pred)
-	plot_confusion_matrix(cm , classes=[0 , 1 , 2 , 3])
-	if show_fig==True:
-		plt.show()
-	if os.path.exists("CM_"+namefig+'.png'):
-		plt.savefig("CM_"+namefig+'_{}.png'.format(int(time.time())))
-	else:
-		plt.savefig("CM_"+namefig+'.png')
-	
+	plot_confusion_matrix(cm , title=namefig,classes=[0 , 1 , 2 , 3],show_fig=show_fig)
+
 
 	return cm , accuracy
 
@@ -50,7 +44,7 @@ def RFClassifier(  num_min_split=200 , num_estimators = 10 , max_depth = 10 ):
 	return classifier
 
 
-def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
+def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues,show_fig=False):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
@@ -78,6 +72,13 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.tight_layout()
+    if os.path.exists("CM_"+title+'.png'):
+        plt.savefig("CM_"+title+'_{}.png'.format(int(time.time())))
+    else:
+        plt.savefig("CM_"+title+'.png')
+    if show_fig==True:
+        plt.show()
+    plt.close()
 
 def CreateClassificationProblem(y,plot=False):
 	"""
