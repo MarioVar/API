@@ -26,7 +26,7 @@ def calculate_stats(y_pred,y_test, namefig, show_fig = False):
 	else:
 		plt.savefig("CM_"+namefig+'.png')
 	
-	plt.savefig("CM_KNN.png")
+
 	return cm , accuracy
 
 def KnearestNeighborClassifier(X_train,X_test,y_train,y_test,k_opt,opt_metr):
@@ -105,7 +105,7 @@ def CreateClassificationProblem(y,plot=False):
 
 def main():
 	rg.Classification_withMLP()
-	rg.classification_with_PREpca(n_comp = 10)
+	rg.classification_with_PREpca(n_comp = 11)
 	rg.classification_with_PREkBest(n_feat = 3)
 
 

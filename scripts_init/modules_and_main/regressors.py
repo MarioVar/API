@@ -119,7 +119,7 @@ def DTClassifier(mxdp,msp,X_train, X_test, Y_train , Y_test):
 	dt = DecisionTreeClassifier(random_state = 42, max_depth=mxdp,min_samples_split=msp)
 	dt.fit(X_train , Y_train)
 	y_pred_DT=dt.predict(X_test)
-	accuracy , cm = mc.calculate_stats(y_pred_DT , Y_test , namefig = "DecisionTree" )
+	cm,accuracy = mc.calculate_stats(y_pred_DT , Y_test , namefig = "DecisionTree" )
 	print("Accuracy Decision Tree Classifier: " ,accuracy)
 	return accuracy
 
@@ -151,7 +151,6 @@ def random_forest_tun(num_trees_vect,tuned_max_depth,tuned_min_samples_split,X_t
 	else:
 		score = RandomForestC(tuned_max_depth,tuned_min_samples_split,ntrees,X_train, X_test, Y_train , Y_test)
 
-	#print("R2_rf: ",r2_score(Y_test , y_pred_RF))
 
 	return score,ntrees
 
@@ -173,7 +172,7 @@ def RandomForestC(tuned_max_depth,tuned_min_samples_split,ntrees,X_train, X_test
 		max_features="sqrt" , n_estimators=ntrees , random_state = 42)
 	dt.fit(X_train , Y_train)
 	y_pred_RF=dt.predict(X_test)
-	accuracy , cm= mc.calculate_stats(y_pred_RF, Y_test , namefig = "RandomForest")
+	cm,accuracy= mc.calculate_stats(y_pred_RF, Y_test , namefig = "RandomForest")
 	return accuracy
 
 
@@ -228,7 +227,7 @@ def start_classification_tun(X_train, X_test, y_train, y_test):
 	max_depth_array=np.linspace(1,200,20,dtype=int)
 	minSamples_split=np.linspace(2,300,30,dtype=int)
 	acc,depth,samples_min=Tuning_DecisionTree(max_depth_array ,minSamples_split, X_train , X_test , y_train , y_test, classification= True)
-	dt_dict.update({'accuracy' : str(acc)})
+	dt_dict.update({'accuracy' : float(acc)})
 	dt_dict.update({'depth' : int(depth)})
 	dt_dict.update({'samples' : int(samples_min)})
 	#print("R2_DT: ",r2dt,"depth_opt: ",depth,"samples_min: ",samples_min)
@@ -238,7 +237,7 @@ def start_classification_tun(X_train, X_test, y_train, y_test):
 	rf_dict = {}
 	num_trees_vect=np.linspace(1,200,dtype=int)
 	accrf,ntrees=random_forest_tun(num_trees_vect,depth,samples_min,X_train , X_test , y_train , y_test, classifier=True)
-	rf_dict.update({'accuracy' : str(accrf)})
+	rf_dict.update({'accuracy' : float(accrf)})
 	rf_dict.update({'trees' : int(ntrees)})
 	#print("r2_rf: ",r2rf,"num estimators opt RF: ",ntrees)
 	

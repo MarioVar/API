@@ -73,14 +73,14 @@ def stratifiedKFold_validation(X , Y,continous=True):
 
 
 	if continous== True:
-		print("R2 StratifiedKFold Validation KNN Regression: " ,np.mean(knn_scores))
-		print("R2 StratifiedKFold Validation DT Regression: " ,np.mean(dt_scores))
-		print("R2 StratifiedKFold Validation RF Regression: " ,np.mean(rf_scores))
+		print("R2 StratifiedKFold Validation KNN Regression: ",np.mean(knn_scores))
+		print("R2 StratifiedKFold Validation DT Regression: ",np.mean(dt_scores))
+		print("R2 StratifiedKFold Validation RF Regression: ",np.mean(rf_scores))
 		return np.mean(knn_scores), np.mean(dt_scores) , np.mean(rf_scores)
 	else:
 		#print("Accuracy StratifiedKFold Validation MLP Classification: " ,np.mean(mlp_scores))
-		print("Accuracy StratifiedKFold Validation DT Classificatio: " ,np.mean(dt_scores))
-		print("Accuracy StratifiedKFold Validation RF Classification: " ,np.mean(rf_scores))
+		print("Accuracy StratifiedKFold Validation DT Classificatio: ",np.mean(dt_scores))
+		print("Accuracy StratifiedKFold Validation RF Classification: ",np.mean(rf_scores))
 		return np.mean(dt_scores) , np.mean(rf_scores)
 
 def stratifiedKFold_MLP(X , Y):
