@@ -396,7 +396,7 @@ def classification_with_PREkBest(n_feat,stratified_val=True,plot_matrix=False,na
     
 #	rts.save_tuning_par(str(name_dataset)+str(n_feat)+'_kBest full_Regression',knn_dict,dt_dict,rf_dict)
 	dt_dict,rf_dict=classification(X,y,stratified=True,scale=False)
-	filename = str(n_comp)+"_KBest full_Classification_par"
+	filename = str(n_feat)+"_KBest full_Classification_par"
 	dic={}
 	dic['dt_accuracy']=dt_dict
 	dic['rf_accuracy']=rf_dict
