@@ -60,5 +60,5 @@ if __name__=='__main__':
 	"""
 	for i in [3,4,8,11]:
 		rg.regression_with_PREpca(i,name_dataset='Day_',csv_path=day_path)
-		rf.regression_woth_PREkBest(i,name_dataset='Day_',csv_path=day_path)
+		rg.regression_with_PREkBest(i,name_dataset='Day_',csv_path=day_path)
 

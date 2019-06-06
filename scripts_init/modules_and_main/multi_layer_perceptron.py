@@ -130,7 +130,7 @@ def test_model(model, samples_train, categorical_labels_train, samples_test, cat
 
     # Calculate soft predictionsmulti_layer_perceptron
     soft_values = model.predict(samples_test, verbose=2)
-    mc.calculate_stats(predictions, categorical_labels_test , 'mlp_confusion_matrix', show_fig=True)
+    mc.calculate_stats(predictions, categorical_labels_test , 'mlp_confusion_matrix', show_fig=False)
 
     training_predictions = model.predict_classes(samples_train, verbose=2)
     training_soft_values = model.predict(samples_train, verbose=2)

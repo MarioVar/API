@@ -15,5 +15,5 @@ if __name__=='__main__':
 	"""
 	for i in [3,4,8,11]:
 		rg.regression_with_PREpca(i)
-		rg.regression_woth_PREkBest(i)
+		rg.regression_with_PREkBest(i)
 	
