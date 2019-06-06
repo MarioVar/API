@@ -242,13 +242,9 @@ def start_classification_tun(X_train, X_test, y_train, y_test):
 	rf_dict.update({'trees' : int(ntrees)})
 	#print("r2_rf: ",r2rf,"num estimators opt RF: ",ntrees)
 	
-	#MLP
-	mlp_dict = {}
-	accuracy =  mlp.mlp_tuning(X_train, X_test , y_train , y_test)
-	mlp_dict.update({'accuracy': str(accuracy) })
 	
 	
-	return dt_dict, rf_dict, mlp_dict
+	return dt_dict, rf_dict
 
 
 
@@ -317,16 +313,14 @@ def regression(X,Y,stratified=True,scale=False):
 def classification(X,Y,stratified=True,scale=False):
 	accuracy_dt={}
 	accuracy_rf={}
-	accuracy_mlp = {}
 	if stratified==True:
-		accuracy_dt['dt_accuracy'], accuracy_rf['rf_accuracy'] , accuracy_mlp['mlp_accuracy']=sp.stratifiedKFold_validation(X , Y, continous = False)
+		accuracy_dt['dt_accuracy'], accuracy_rf['rf_accuracy']=sp.stratifiedKFold_validation(X , Y, continous = False)
 	else:
 		X_train , X_test , Y_train , Y_test=sp.dataset_split(X,Y,scale)
-		dt_dict, rf_dict , mlp_dict =start_classification_tun(X_train , X_test , Y_train , Y_test)
+		dt_dict, rf_dict =start_classification_tun(X_train , X_test , Y_train , Y_test)
 		accuracy_dt['dt_accuracy']=dt_dict['accuracy']
 		accuracy_rf['rf_accuracy']=rf_dict['accuracy']
-		accuracy_mlp['mlp_accuracy'] = mlp_dict['accuracy'] 
-	return  accuracy_dt, accuracy_rf, accuracy_mlp
+	return  accuracy_dt, accuracy_rf 
 
 
 
@@ -359,14 +353,14 @@ def classification_with_PREpca(n_comp,stratified_val=True,plot_matrix=False,name
 	if plot_matrix==True:
 		scatter_matrix(pca_df)
 		plt.savefig(str(n_comp)+"PCA_scatter.png")
-	dt_dict,rf_dict, mlp_dict = classification(pca_df,y,stratified=True,scale=False)
+	dt_dict,rf_dict = classification(pca_df,y,stratified=True,scale=False)
 	#rts.save_tuning_par(str(name_dataset)+str(n_comp)+"_Pca full_Classification_pca_par",knn_dict,dt_dict,rf_dict)
 	#salvataggio parametri di tuning
 	filename = str(n_comp)+"_Pca full_Classification_pca_par"
 	dic={}
 	dic['dt_accuracy']=dt_dict
 	dic['rf_accuracy']=rf_dict
-	dic['mlp_accuracy'] = mlp_dict
+
 	with open(filename+".json","w") as file:
 		file.write(json.dumps(dic))
 
@@ -381,8 +375,6 @@ def regression_with_PREkBest(n_feat,stratified_val=True,plot_matrix=False,name_d
 		y_label='res_dl_kbps'
 	#funzioni di regressione
 	
-	feature_to_remove= ['res_dl_kbps']
-	y_label='res_dl_kbps'
 	X, y, main_feature= pr.get_main_features(csv_path, feature_to_remove , y_label, n_feat)
 	knn_dict,dt_dict,rf_dict=regression(X,y,stratified=True,scale=False)
 	rts.save_tuning_par(str(name_dataset)+str(n_feat)+'_kBest full_Regression',knn_dict,dt_dict,rf_dict)
@@ -399,17 +391,30 @@ def classification_with_PREkBest(n_feat,stratified_val=True,plot_matrix=False,na
 		y_label='res_dl_kbps'
 	#funzioni di regressione
 	
-	feature_to_remove= ['res_dl_kbps']
-	y_label='res_dl_kbps'
+
 	X, y, main_feature= pr.get_main_features(csv_path, feature_to_remove , y_label, n_feat, function = f_classif)
 	y = mc.CreateClassificationProblem(y,plot=False)
     
 #	rts.save_tuning_par(str(name_dataset)+str(n_feat)+'_kBest full_Regression',knn_dict,dt_dict,rf_dict)
-	dt_dict,rf_dict , mlp_dict=classification(X,y,stratified=True,scale=False)
+	dt_dict,rf_dict=classification(X,y,stratified=True,scale=False)
 	filename = str(n_comp)+"_KBest full_Classification_par"
 	dic={}
 	dic['dt_accuracy']=dt_dict
 	dic['rf_accuracy']=rf_dict
-	dic['mlp_accuracy']= mlp_dict
 	with open(filename+".json","w") as file:
 		file.write(json.dumps(dic))
+
+
+def Classification_withMLP(name_dataset='Def_',csv_path="../QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extraction.csv"):
+
+	feature_to_remove= ['res_dl_kbps' , 'ts_start' , 'ts_end']
+	y_label='res_dl_kbps'
+
+	feature_vect,dataframe,y=pr.get_feature(csv_path,feature_to_remove,y_label)
+	y = mc.CreateClassificationProblem(y,plot=False)
+
+	dataframe=pr.robust_scalint(dataframe)
+	dict_mlp=sp.stratifiedKFold_MLP(dataframe , y)
+	filename = str(name_dataset)+"_MLP_Classification"
+	with open(filename+".json","w") as file:
+		file.write(json.dumps(dict_mlp))
