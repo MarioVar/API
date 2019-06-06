@@ -335,7 +335,6 @@ def regression_with_PREpca(n_comp,stratified_val=True,plot_matrix=False,name_dat
 	if plot_matrix==True:
 		scatter_matrix(pca_df)
 		plt.savefig(str(n_comp)+"PCA_scatter.png")
-
 	knn_dict,dt_dict,rf_dict=regression(pca_df,y,stratified=True,scale=False)
 	rts.save_tuning_par(str(name_dataset)+str(n_comp)+"_Pca full_Regression_pca_par",knn_dict,dt_dict,rf_dict)
 
