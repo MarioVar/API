@@ -4,10 +4,6 @@ import os
 import preprocessing as pr
 import regressors as rg
 import splitting as sp
-import matplotlib as mpl
-
-mpl.use('TkAgg')
-import matplotlib.pyplot as plt
 from pandas.plotting import scatter_matrix
 import json
 
@@ -102,7 +98,7 @@ def get_all_routes(path):
 	dict = {}
 	for index, i in data.iterrows():
 		if i['route_id']  not in dict:
-			print(i['route_id'])
+			#print(i['route_id'])
 			dict.update({ i['route_id'] : i['route_desc']})
 	return dict
 

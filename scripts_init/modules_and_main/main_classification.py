@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 from scipy import stats
 from sklearn.neighbors import KNeighborsClassifier 
@@ -13,19 +15,15 @@ import regressors as rg
 import preprocessing as pr
 import splitting as sp
 import tuning_classifiers as tun
+import regressor_spatial_splitting as spa
+import regressor_temporal_splitting as tem
 
 
 def calculate_stats(y_pred,y_test, namefig, show_fig = False):
 	cm = confusion_matrix(y_test, y_pred, labels = [0 , 1 , 2 , 3]) 
 	accuracy = accuracy_score(y_test , y_pred)
-	plot_confusion_matrix(cm , classes=[0 , 1 , 2 , 3])
-	if show_fig==True:
-		plt.show()
-	if os.path.exists("CM_"+namefig+'.png'):
-		plt.savefig("CM_"+namefig+'_{}.png'.format(int(time.time())))
-	else:
-		plt.savefig("CM_"+namefig+'.png')
-	
+	plot_confusion_matrix(cm , title=namefig,classes=[0 , 1 , 2 , 3],show_fig=show_fig)
+
 
 	return cm , accuracy
 
@@ -50,7 +48,7 @@ def RFClassifier(  num_min_split=200 , num_estimators = 10 , max_depth = 10 ):
 	return classifier
 
 
-def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
+def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues,show_fig=False):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
@@ -78,6 +76,13 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.tight_layout()
+    if os.path.exists("CM_"+title+'.png'):
+        plt.savefig("CM_"+title+'_{}.png'.format(int(time.time())))
+    else:
+        plt.savefig("CM_"+title+'.png')
+    if show_fig==True:
+        plt.show()
+    plt.clf()
 
 def CreateClassificationProblem(y,plot=False):
 	"""
@@ -104,10 +109,56 @@ def CreateClassificationProblem(y,plot=False):
 
 
 def main():
-	#rg.Classification_withMLP()
-	#rg.classification_with_PREpca(n_comp = 11)
+	rg.Classification_withMLP()
+	rg.classification_with_PREpca(n_comp = 11)
 	rg.classification_with_PREkBest(n_feat = 3)
 
+def Temporal_main():
+        #funzione che genera i csv per lo splitting temporale, va chiamata una sola volta, poi commentata
+	tem.temporal_splitting()
+
+	night_path="../QoS_RAILWAY_PATHS_REGRESSION/night.csv"
+	day_path="../QoS_RAILWAY_PATHS_REGRESSION/day.csv"
+	n_comp_pca=11
+	K_feature_opt=3
+
+	prefix='Night_'
+	#Night
+	rg.Classification_withMLP(name_dataset=prefix,csv_path=night_path)
+	rg.classification_with_PREpca(n_comp_pca,name_dataset=prefix,csv_path=night_path)
+	rg.classification_with_PREkBest(K_feature_opt,name_dataset=prefix,csv_path=night_path)
+
+	'''
+	prefix='Day_'
+	#Day
+	rg.Classification_withMLP(name_dataset=prefix,csv_path=day_path)
+	rg.classification_with_PREpca(n_comp_pca,name_dataset=prefix,csv_path=day_path)
+	rg.classification_with_PREkBest(K_feature_opt,name_dataset=prefix,csv_path=day_path)
+	'''
+
+def Spatial_main():
+	n_comp=11
+	n_feat=3
+
+	dataframe_divided_by_routedesc , dataframe_divided_by_routeid, routes = spa.spatial_splitting(pca = False)
+	path="../QoS_RAILWAY_PATHS_REGRESSION/"
+	list_datasets_path={}
+	for i in routes:
+		filename = routes[i] + ".csv"
+		fullname = os.path.join(path,filename)
+		print(filename+">    "+fullname)
+
+	#Viene effettuato solo per una rotta
+	name_route='Oslo - Trondheim'
+	route_path='../QoS_RAILWAY_PATHS_REGRESSION/Oslo - Trondheim.csv'
+	rg.classification_with_PREkBest(n_feat , name_dataset=name_route , csv_path=route_path, merge = True)
+
+	dataframe_divided_by_routedesc , dataframe_divided_by_routeid, routes = spa.spatial_splitting(pca = True)
+	rg.classification_with_PREpca(n_comp,name_dataset = name_route , csv_path = route_path)
+
+	rg.Classification_withMLP(name_dataset = name_route, csv_path = route_path)
 
 if __name__=='__main__':
-	main()
+	#main()
+	#Temporal_main()
+	Spatial_main()
