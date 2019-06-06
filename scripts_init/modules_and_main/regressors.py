@@ -15,7 +15,7 @@ from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.feature_selection import SelectKBest, f_regression,f_classif
 import preprocessing as pr
 import splitting as sp
 import regressor_temporal_splitting as rts
@@ -391,7 +391,7 @@ def classification_with_PREkBest(n_feat,stratified_val=True,plot_matrix=False,na
 	#funzioni di regressione
 	
 
-	X, y, main_feature= pr.get_main_features(csv_path, feature_to_remove , y_label, n_feat, function = f_classif)
+	X, y, main_feature= pr.get_main_features(csv_path, feature_to_remove , y_label, n_feat, function=f_classif)
 	y = mc.CreateClassificationProblem(y,plot=False)
     
 #	rts.save_tuning_par(str(name_dataset)+str(n_feat)+'_kBest full_Regression',knn_dict,dt_dict,rf_dict)

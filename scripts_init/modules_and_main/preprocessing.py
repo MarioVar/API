@@ -16,7 +16,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.decomposition import PCA
-from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.feature_selection import SelectKBest, f_regression,f_classif
 import regressors as rg
 import splitting as sp
 

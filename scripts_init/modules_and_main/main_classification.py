@@ -104,8 +104,8 @@ def CreateClassificationProblem(y,plot=False):
 
 
 def main():
-	rg.Classification_withMLP()
-	rg.classification_with_PREpca(n_comp = 11)
+	#rg.Classification_withMLP()
+	#rg.classification_with_PREpca(n_comp = 11)
 	rg.classification_with_PREkBest(n_feat = 3)
 
 
