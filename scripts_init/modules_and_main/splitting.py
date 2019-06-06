@@ -56,18 +56,22 @@ def stratifiedKFold_validation(X , Y,continous=True):
 	knn_scores = []
 	dt_scores = []
 	rf_scores = []
+	mlp_scores = []
 	for train_index , test_index in folds.split(X , Y):
 		X_train , X_test = X.loc[train_index] , X.loc[test_index]
 		Y_train , Y_test = Y.loc[train_index] , Y.loc[test_index]
 		if continous==True:
 			knn_dict , dt_dict, rf_dict = rg.start_regression_tun(X_train , X_test , Y_train , Y_test)
+			knn_scores.append(knn_dict['r2'])
+			dt_scores.append(dt_dict['r2'])
+			rf_scores.append(rf_dict['r2'])	
 		elif continous==False:
-			dt_dict, rf_dict = rg.start_classification_tun(X_train , X_test , Y_train , Y_test)
+			dt_dict, rf_dict , mlp_dict  = rg.start_classification_tun(X_train , X_test , Y_train , Y_test)
+			mlp_scores.append(mlp_dict['accuracy'])
+			dt_scores.append(dt_dict['accuracy'])
+			rf_scores.append(rf_dict['accuracy'])
+	
 
-
-		knn_scores.append(knn_dict['r2'])
-		dt_scores.append(dt_dict['r2'])
-		rf_scores.append(rf_dict['r2'])	
 	"""	
 	plt.plot(knn_scores)
 	plt.plot(dt_scores)
@@ -77,7 +81,13 @@ def stratifiedKFold_validation(X , Y,continous=True):
 	plt.ylabel('Rquadro')
 	plt.savefig("stratified_score.fig")
 	"""
-	print("R2 StratifiedKFold Validation KNN Regression: " ,np.mean(knn_scores))
-	print("R2 StratifiedKFold Validation DT Regression: " ,np.mean(dt_scores))
-	print("R2 StratifiedKFold Validation RF Regression: " ,np.mean(rf_scores))
-	return np.mean(knn_scores), np.mean(dt_scores) , np.mean(rf_scores)
+	if continous== True:
+		print("R2 StratifiedKFold Validation KNN Regression: " ,np.mean(knn_scores))
+		print("R2 StratifiedKFold Validation DT Regression: " ,np.mean(dt_scores))
+		print("R2 StratifiedKFold Validation RF Regression: " ,np.mean(rf_scores))
+		return np.mean(knn_scores), np.mean(dt_scores) , np.mean(rf_scores)
+	else:
+		print("Accuracy StratifiedKFold Validation MLP Classification: " ,np.mean(mlp_scores))
+		print("Accuracy StratifiedKFold Validation DT Classificatio: " ,np.mean(dt_scores))
+		print("Accuracy StratifiedKFold Validation RF Classification: " ,np.mean(rf_scores))
+		return np.mean(mlp_scores), np.mean(dt_scores) , np.mean(rf_scores)

@@ -8,6 +8,7 @@ import imblearn.metrics as im
 import keras.wrappers.scikit_learn as wp
 from sklearn.model_selection import GridSearchCV 
 import numpy as np
+import main_classification as mc
 #def multi_layer_perceptron(samples_train, categorical_labels_train, samples_test, categorical_labels_test):
 def multi_layer_perceptron( num_nodes=100 ,activation = 'relu' ,input_dim = 19):
     '''
@@ -129,6 +130,7 @@ def test_model(model, samples_train, categorical_labels_train, samples_test, cat
 
     # Calculate soft predictionsmulti_layer_perceptron
     soft_values = model.predict(samples_test, verbose=2)
+    mc.calculate_stats(predictions, categorical_labels_test , 'mlp_confusion_matrix', show_fig=True)
 
     training_predictions = model.predict_classes(samples_train, verbose=2)
     training_soft_values = model.predict(samples_train, verbose=2)
@@ -165,7 +167,9 @@ def mlp_tuning(X_train , X_test , Y_train , Y_test):
     numnodes=grid_result.best_params_['num_nodes']
     activation=grid_result.best_params_['activation']
     soft_values, predictions, training_soft_values, training_predictions, accuracy, fmeasure, macro_gmean, training_accuracy, training_fmeasure, training_macro_gmean=train_test(X_train , Y_train , X_test , Y_test , num_nodes=numnodes, activation=activation)
+    
     print(accuracy)
+    return accuracy
 
     
 #'hidden_layer_sizes':np.arange(50, 150)

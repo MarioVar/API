@@ -1,9 +1,12 @@
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
+import main_classification as mc
+import multi_layer_perceptron as mlp
 
 
-def tun_RF(model , X_train , Y_train):
+def tun_RF( X_train , Y_train):
+    model = mc.RFClassifier()
     n_estimators = np.arange(start=10 , stop=100 , step=10 , dtype=int)  
     min_samples_split= np.arange(start = 10 , stop = 200 , step=10 , dtype=int)
     max_depth = np.arange(start=10 , stop =40  , step=10 , dtype=int)
@@ -15,7 +18,7 @@ def tun_RF(model , X_train , Y_train):
     return grid_search.best_estimator_
 
 
-def stratified_kfold_tuning(model, X , Y):
+def stratified_kfold_tuning( X , Y):
     folds = StratifiedKFold(n_splits = 4 , random_state = 42 , shuffle = True)
     best_estimator = []
     i=0;
@@ -23,5 +26,5 @@ def stratified_kfold_tuning(model, X , Y):
     for train_index , test_index in folds.split(X , Y):
         X_train , X_test = X[train_index], X[test_index]
         Y_train , Y_test = Y[train_index], Y[test_index]
-        print(tun_RF(model, X_train , Y_train))
-    print(best_estimator)
+        print(tun_RF(X_train , Y_train))
+        print(mlp.mlp_tuning(X_train ,X_test, Y_train ,Y_test))        

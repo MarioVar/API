@@ -12,6 +12,7 @@ import os
 import regressors as rg
 import preprocessing as pr
 import splitting as sp
+import tuning_classifiers as tun
 
 
 def calculate_stats(y_pred,y_test, namefig, show_fig = False):
@@ -38,15 +39,15 @@ def KnearestNeighborClassifier(X_train,X_test,y_train,y_test,k_opt,opt_metr):
 	
 	return y_pred
 
-def RFClassifier(X, Y , max_features = 5 , num_min_split=200 , num_estimators = 10):
-	classifier = RandomForestClassifier( n_jobs = -1 , random_state = 42 , max_features= 'sqrt')
-	tun.stratified_kfold_tuning(classifier , X , Y)
+def RFClassifier(  num_min_split=200 , num_estimators = 10 , max_depth = 10 ):
+	classifier = RandomForestClassifier( n_jobs = -1 , random_state = 42 , max_features= 'sqrt', n_estimators = num_estimators , min_saples_split = num_min_split , max_depth = max_depth)
 	'''classifier.fit(X_train , y_train)
 	Y_pred = classifier.predict(X_test)
 	cm = calculate_stats(Y_pred , y_test)
 	plot_confusion_matrix(cm , classes=[0, 1 , 2 , 3])
 	plt.show()
 	return Y_pred'''
+	return classifier
 
 
 def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
@@ -103,23 +104,9 @@ def CreateClassificationProblem(y,plot=False):
 
 
 def main():
-	feature_to_remove= ['res_dl_kbps', 'ts_start', 'ts_end']
-	y_label='res_dl_kbps'
+	rg.classification_with_PREpca(n_comp = 10)
+	rg.classification_with_PREkBest(n_feat = 3)
 
-	feature_vect, dataframe,y=pr.get_feature("../QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extraction.csv",feature_to_remove , y_label)
-
-	#digitalizzazione uscita
-	y=CreateClassificationProblem(y , plot = True)
-
-
-	X_train_mean , X_test_mean , Y_train , Y_test = sp.dataset_split(dataframe,y,True)
-	#y_pred=KnearestNeighborClassifier(X_train_mean,X_test_mean,Y_train,Y_test,k_opt=5,opt_metr=1)
-	#y_pred=RFClassifier(dataframe , y)
-	
-	#rg.classification_with_PREpca(11)
-	#rg.classification_with_PREkBest(3)
- #esempio uso MLP
-	soft_values, predictions, training_soft_values, training_predictions, accuracy, fmeasure, macro_gmean, training_accuracy, training_fmeasure, training_macro_gmean=mlp.multi_layer_perceptron(X_train_mean,Y_train,X_test_mean,Y_test)    
 
 if __name__=='__main__':
 	main()

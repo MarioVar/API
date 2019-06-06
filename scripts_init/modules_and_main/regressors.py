@@ -21,6 +21,7 @@ import splitting as sp
 import regressor_temporal_splitting as rts
 import main_classification as mc
 import json
+import multi_layer_perceptron as mlp
 
 #REGRESSORE LINEARE
 
@@ -240,7 +241,18 @@ def start_classification_tun(X_train, X_test, y_train, y_test):
 	rf_dict.update({'accuracy' : str(accrf)})
 	rf_dict.update({'trees' : int(ntrees)})
 	#print("r2_rf: ",r2rf,"num estimators opt RF: ",ntrees)
-	return dt_dict, rf_dict
+	
+	#MLP
+	mlp_dict = {}
+	accuracy =  mlp.mlp_tuning(X_train, X_test , y_train , y_test)
+	mlp_dict.update({'accuracy': str(accuracy) })
+	
+	
+	return dt_dict, rf_dict, mlp_dict
+
+
+
+
 
 #FUNZIONE CHE AVVIA IL PROCESSO DI REGRESSIONE - DA ESEGUIRE QUANDO SI CONOSCONO GLI IPERPARAMETRI
 """
@@ -305,15 +317,16 @@ def regression(X,Y,stratified=True,scale=False):
 def classification(X,Y,stratified=True,scale=False):
 	accuracy_dt={}
 	accuracy_rf={}
+	accuracy_mlp = {}
 	if stratified==True:
-		accuracy_dt['dt_accuracy'], accuracy_rf['rf_accuracy']=sp.stratifiedKFold_validation(X , Y, continous = False)
+		accuracy_dt['dt_accuracy'], accuracy_rf['rf_accuracy'] , accuracy_mlp['mlp_accuracy']=sp.stratifiedKFold_validation(X , Y, continous = False)
 	else:
 		X_train , X_test , Y_train , Y_test=sp.dataset_split(X,Y,scale)
-		knn_dict , dt_dict, rf_dict=start_classification_tun(X_train , X_test , Y_train , Y_test)
+		dt_dict, rf_dict , mlp_dict =start_classification_tun(X_train , X_test , Y_train , Y_test)
 		accuracy_dt['dt_accuracy']=dt_dict['accuracy']
-		r2_accuracy['rf_accuracy']=rf_dict['accuracy']
-	
-	return  accuracy_dt, accuracy_rf
+		accuracy_rf['rf_accuracy']=rf_dict['accuracy']
+		accuracy_mlp['mlp_accuracy'] = mlp_dict['accuracy'] 
+	return  accuracy_dt, accuracy_rf, accuracy_mlp
 
 
 
@@ -346,13 +359,14 @@ def classification_with_PREpca(n_comp,stratified_val=True,plot_matrix=False,name
 	if plot_matrix==True:
 		scatter_matrix(pca_df)
 		plt.savefig(str(n_comp)+"PCA_scatter.png")
-	dt_dict,rf_dict=classification(pca_df,y,stratified=True,scale=False)
+	dt_dict,rf_dict, mlp_dict = classification(pca_df,y,stratified=True,scale=False)
 	#rts.save_tuning_par(str(name_dataset)+str(n_comp)+"_Pca full_Classification_pca_par",knn_dict,dt_dict,rf_dict)
 	#salvataggio parametri di tuning
 	filename = str(n_comp)+"_Pca full_Classification_pca_par"
 	dic={}
 	dic['dt_accuracy']=dt_dict
 	dic['rf_accuracy']=rf_dict
+	dic['mlp_accuracy'] = mlp_dict
 	with open(filename+".json","w") as file:
 		file.write(json.dumps(dic))
 
@@ -391,10 +405,11 @@ def classification_with_PREkBest(n_feat,stratified_val=True,plot_matrix=False,na
 	y = mc.CreateClassificationProblem(y,plot=False)
     
 #	rts.save_tuning_par(str(name_dataset)+str(n_feat)+'_kBest full_Regression',knn_dict,dt_dict,rf_dict)
-	dt_dict,rf_dict=classification(X,y,stratified=True,scale=False)
+	dt_dict,rf_dict , mlp_dict=classification(X,y,stratified=True,scale=False)
 	filename = str(n_comp)+"_KBest full_Classification_par"
 	dic={}
 	dic['dt_accuracy']=dt_dict
 	dic['rf_accuracy']=rf_dict
+	dic['mlp_accuracy']= mlp_dict
 	with open(filename+".json","w") as file:
 		file.write(json.dumps(dic))
