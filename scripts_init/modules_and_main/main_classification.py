@@ -14,7 +14,6 @@ import os
 import regressors as rg
 import preprocessing as pr
 import splitting as sp
-import tuning_classifiers as tun
 import regressor_spatial_splitting as spa
 import regressor_temporal_splitting as tem
 
@@ -159,6 +158,6 @@ def Spatial_main():
 	rg.Classification_withMLP(name_dataset = name_route, csv_path = route_path)
 
 if __name__=='__main__':
-	#main()
-	#Temporal_main()
+	main()
+	Temporal_main()
 	Spatial_main()
