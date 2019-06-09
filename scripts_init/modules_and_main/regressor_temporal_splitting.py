@@ -59,6 +59,10 @@ if __name__=='__main__':
 		viene effettuata tutto usando un solo dataset per motivi computazionali
 	"""
 	for i in [3,4,8,11]:
+
 		rg.regression_with_PREpca(i,name_dataset='Day_',csv_path=day_path)
 		rg.regression_with_PREkBest(i,name_dataset='Day_',csv_path=day_path)
+
+
+
 

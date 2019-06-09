@@ -85,7 +85,7 @@ def KNearestNeighbor(X_train,X_test,y_train,y_test,opt_distmetr,K_opt):
 	nn.fit(X_train, y_train)
 	y_pred_neighbors = nn.predict(X_test)
 
-	return r2_score(y_test,y_pred_neighbors)
+	return mean_squared_error(y_test,y_pred_neighbors)
 
 
 #Ritorna il massimo di un grafico e la corrispondente ascissa
@@ -131,7 +131,7 @@ def DecisionTree(max_depth_opt,min_samples_split_opt,X_train, X_test, Y_train , 
 	dt.fit(X_train , Y_train)
 	y_pred_DT=dt.predict(X_test)
 
-	return r2_score(Y_test , y_pred_DT)
+	return mean_squared_error(Y_test , y_pred_DT)
 
 
 #FUNZIONE PER IL TUNING DEGLI IPERPARAMETRI DEL REGRESSORE RANDOM FOREST
@@ -164,7 +164,7 @@ def RandForest(max_depth_opt ,min_samples_split_opt, n_estimators_opt, X_train, 
 	dt.fit(X_train , Y_train)
 	y_pred_RF=dt.predict(X_test)
 
-	return r2_score(Y_test , y_pred_RF)
+	return mean_squared_error(Y_test , y_pred_RF)
 
 def RandomForestC(tuned_max_depth,tuned_min_samples_split,ntrees,X_train, X_test, Y_train , Y_test):
 	print("Start random forest Classifier: ")

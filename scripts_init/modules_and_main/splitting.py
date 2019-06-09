@@ -37,7 +37,7 @@ def save_stratified_r2(filename,knn,dt,rf):
 	dic['dt_r2']=dt
 	dic['rf_r2']=rf
 	with open(filename+".json","a+") as file:
-		file.write("r2 " + json.dumps(dic) + "\n")
+		file.write("mean_squared_error " + json.dumps(dic) + "\n")
 
 #continous = True -> y da digitalizzare in 10 bins
 #continous = False -> y già discreta
@@ -72,9 +72,9 @@ def stratifiedKFold_validation(X , Y,continous=True):
 
 
 	if continous== True:
-		print("R2 StratifiedKFold Validation KNN Regression: ",np.mean(knn_scores))
-		print("R2 StratifiedKFold Validation DT Regression: ",np.mean(dt_scores))
-		print("R2 StratifiedKFold Validation RF Regression: ",np.mean(rf_scores))
+		print("mean_squared_error StratifiedKFold Validation KNN Regression: ",np.mean(knn_scores))
+		print("mean_squared_error StratifiedKFold Validation DT Regression: ",np.mean(dt_scores))
+		print("mean_squared_error StratifiedKFold Validation RF Regression: ",np.mean(rf_scores))
 		return np.mean(knn_scores), np.mean(dt_scores) , np.mean(rf_scores)
 	else:
 		#print("Accuracy StratifiedKFold Validation MLP Classification: " ,np.mean(mlp_scores))
