@@ -52,9 +52,9 @@ def get_nodeid_by_route(route_id, pca = False):
 	data2_single_route= dataapu[dataapu['route_id']==route_id]
 	data = pd.read_csv("../QoS_RAILWAY_PATHS_REGRESSION/QoS_railway_paths_nodeid_iccid_feature_extraction.csv")
 	if pca == True:
-		dataset_routeid = pd.merge(route12[['nodeid','res_time_start_s','res_time_end_s']], data,left_on=['nodeid','res_time_start_s','res_time_end_s'],right_on=['nodeid','ts_start','ts_end'],how='inner')[data.columns]	#dataset_routeid=data.loc[data2_single_route[['nodeid','res_time_start_s','res_time_end_s']].join(data,lsuffix="The",how='inner').index , :]
+		dataset_routeid = pd.merge(data2_single_route[['nodeid','res_time_start_s','res_time_end_s']], data,left_on=['nodeid','res_time_start_s','res_time_end_s'],right_on=['nodeid','ts_start','ts_end'],how='inner')[data.columns]	#dataset_routeid=data.loc[data2_single_route[['nodeid','res_time_start_s','res_time_end_s']].join(data,lsuffix="The",how='inner').index , :]
 	else:
-		dataset_routeid = pd.merge(route12[['nodeid','res_time_start_s','res_time_end_s']], data,left_on=['nodeid','res_time_start_s','res_time_end_s'],right_on=['nodeid','ts_start','ts_end'],how='inner')
+		dataset_routeid = pd.merge(data2_single_route[['nodeid','res_time_start_s','res_time_end_s']], data,left_on=['nodeid','res_time_start_s','res_time_end_s'],right_on=['nodeid','ts_start','ts_end'],how='inner')
 	return dataset_routeid
 
 
