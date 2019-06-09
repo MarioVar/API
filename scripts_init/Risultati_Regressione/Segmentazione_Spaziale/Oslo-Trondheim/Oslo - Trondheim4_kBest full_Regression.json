@@ -1,0 +1,1 @@
+{"KNearestNeighbor": {"knn_mse": 56644.20588257572}, "DecisionTree": {"dt_mse": 55107.414545868094}, "RandomForest": {"rf_mse": 49674.71663908714}}
