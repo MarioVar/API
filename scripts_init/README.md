@@ -1,6 +1,7 @@
 Passi per eseguire il codice:
-1. Posizionarsi nella cartella: API/scripts_init
-2. Attivare il virtual environment: source source API_ES1/bin/activate
+1. Attivare il virtual environment: source scripts_init/API_ES1/bin/activate
+2. Posizionarsi nella cartella: "API/scripts_init/modules_and_main"
+3. Eseguire uno dei main a disposizione con il comando: python3 "file_name"
 
 Esistono vari main:
 	- main.py che effettua la regressione senza aver fatto segmentazione
