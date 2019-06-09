@@ -27,9 +27,9 @@ def temporal_splitting():
 def save_tuning_par(filename,knn,dt,rf):
 	#salvataggio parametri di tuning
 	dic={}
-	dic['tun_knn']=knn
-	dic['tun_dt']=dt
-	dic['tun_rf']=rf
+	dic['KNearestNeighbor']=knn
+	dic['DecisionTree']=dt
+	dic['RandomForest']=rf
 	with open(filename+".json","w") as file:
 		file.write(json.dumps(dic))
 
@@ -37,9 +37,9 @@ def save_tuning_par(filename,knn,dt,rf):
 def read_tuning_par(filename):
 	with open(filename+".json","r") as file:
 		data=json.loads(file.read())
-		knn_pars=data['tun_knn']
-		dt_pars=data['tun_dt']
-		rf_pars=data['tun_rf']
+		knn_pars=data['KNearestNeighbor']
+		dt_pars=data['DecisionTree']
+		rf_pars=data['RandomForest']
 	return knn_pars,dt_pars,rf_pars
 
 if __name__=='__main__':

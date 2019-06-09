@@ -298,13 +298,13 @@ def regression(X,Y,stratified=True,scale=False):
 	r2_dt={}
 	r2_rf={}
 	if stratified==True:
-		r2_knn['knn_r2'] , r2_dt['dt_r2'], r2_rf['rf_r2']=sp.stratifiedKFold_validation(X , Y)
+		r2_knn['knn_mse'] , r2_dt['dt_mse'], r2_rf['rf_mse']=sp.stratifiedKFold_validation(X , Y)
 	else:
 		X_train , X_test , Y_train , Y_test=sp.dataset_split(X,Y,scale)
 		knn_dict , dt_dict, rf_dict=start_regression_tun(X_train , X_test , Y_train , Y_test)
-		r2_knn['knn_r2']=knn_dict['r2']
-		r2_dt['dt_r2']=dt_dict['r2']
-		r2_rf['rf_r2']=rf_dict['r2']
+		r2_knn['knn_mse']=knn_dict['r2']
+		r2_dt['dt_mse']=dt_dict['r2']
+		r2_rf['rf_mse']=rf_dict['r2']
 	
 	return r2_knn , r2_dt, r2_rf
 
