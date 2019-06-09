@@ -183,7 +183,7 @@ def start_regression_tun(X_train, X_test, y_train, y_test):
 	
 	knn_dict = {}
 	#K-nearest-neighbor 
-	k_opt_array=np.linspace(1,150,150,dtype=int)
+	k_opt_array=np.linspace(5,150,150,dtype=int)
 	dist_vect=np.linspace(1,10,10,dtype=int)
 	r2_knn,dist,K=KNN_tun(X_train,X_test,y_train,y_test,k_opt_array,dist_vect)
 	knn_dict.update({'r2' : float(r2_knn)})
@@ -197,8 +197,8 @@ def start_regression_tun(X_train, X_test, y_train, y_test):
 
 	#decision tree
 	dt_dict = {}
-	max_depth_array=np.linspace(1,200,20,dtype=int)
-	minSamples_split=np.linspace(2,300,30,dtype=int)
+	max_depth_array=np.linspace(10,200,20,dtype=int)
+	minSamples_split=np.linspace(10,300,30,dtype=int)
 	r2dt,depth,samples_min=Tuning_DecisionTree(max_depth_array ,minSamples_split, X_train , X_test , y_train , y_test)
 	dt_dict.update({'r2' : float(r2dt)})
 	dt_dict.update({'depth' : int(depth)})
