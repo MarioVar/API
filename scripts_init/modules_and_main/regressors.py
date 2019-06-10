@@ -71,7 +71,7 @@ def KNN_tun(X_train,X_test,y_train,y_test):
 def KNN_tun(X_train,X_test,y_train,y_test,k_opt_array,metrics_array):
 	params_knn = {'n_neighbors': k_opt_array,'p':metrics_array} 
 	neigh = KNeighborsRegressor()
-	grid_knn = GridSearchCV(estimator=neigh, param_grid=params_knn , scoring = 'r2', n_jobs = -1 , cv = 5)
+	grid_knn = GridSearchCV(estimator=neigh, param_grid=params_knn , scoring = 'neg_mean_squared_error', n_jobs = -1 , cv = 4)
 	grid_knn.fit(X_train , y_train)  
 	k_opt=grid_knn.best_params_['n_neighbors']
 	metrics=grid_knn.best_params_['p']
@@ -102,14 +102,17 @@ def Tuning_DecisionTree(max_depth_array ,minSamples_split, X_train , X_test , Y_
 	print("Start decision tree tuning parameters function")
 	params_dt = {'max_depth': max_depth_array,'min_samples_split':minSamples_split} 
 	dt = DecisionTreeRegressor(random_state = 42)
-	grid_dt = GridSearchCV(estimator=dt, param_grid=params_dt , scoring = 'r2', n_jobs = -1 , cv = 5)
-	grid_dt.fit(X_train , Y_train)  
-	mxdp=grid_dt.best_params_['max_depth']
-	msp=grid_dt.best_params_['min_samples_split']
-	if classification == False:
+	if classification==False:
+		grid_dt = GridSearchCV(estimator=dt, param_grid=params_dt , scoring = 'neg_mean_squared_error', n_jobs = -1 , cv = 4)
+		grid_dt.fit(X_train , Y_train)  
+		mxdp=grid_dt.best_params_['max_depth']
+		msp=grid_dt.best_params_['min_samples_split']
 		score= DecisionTree(mxdp,msp,X_train, X_test, Y_train , Y_test)
-
 	else :
+		grid_dt = GridSearchCV(estimator=dt, param_grid=params_dt , scoring = 'accuracy', n_jobs = -1 , cv = 4)
+		grid_dt.fit(X_train , Y_train)  
+		mxdp=grid_dt.best_params_['max_depth']
+		msp=grid_dt.best_params_['min_samples_split']
 		score = DTClassifier(mxdp,msp,X_train, X_test, Y_train , Y_test)
 	#print("R2_dt:",r2_score(Y_test , y_pred_DT),"max_depth_opt: ",mxdp,"min_samples_split_opt: ",msp)
 	return score,mxdp,msp
@@ -142,15 +145,16 @@ def random_forest_tun(num_trees_vect,tuned_max_depth,tuned_min_samples_split,X_t
 		'n_estimators': num_trees_vect
 	}
 	rf=RandomForestRegressor(random_state = 42)
-	gdsc=GridSearchCV(estimator=rf,param_grid=param_grid, scoring = 'r2', n_jobs = -1 , cv = 5)
-	gdsc.fit(X_train , Y_train)
-	ntrees=gdsc.best_params_['n_estimators']
-	#print("num estimatmarors opt RF: ",ntrees)
 	if classifier==False:
+		gdsc=GridSearchCV(estimator=rf,param_grid=param_grid, scoring = 'neg_mean_squared_error', n_jobs = -1 , cv = 4)
+		gdsc.fit(X_train , Y_train)
+		ntrees=gdsc.best_params_['n_estimators']
 		score=RandForest(tuned_max_depth,tuned_min_samples_split,ntrees,X_train, X_test, Y_train , Y_test)
 	else:
+		gdsc=GridSearchCV(estimator=rf,param_grid=param_grid, scoring = 'accuracy', n_jobs = -1 , cv = 4)
+		gdsc.fit(X_train , Y_train)
+		ntrees=gdsc.best_params_['n_estimators']
 		score = RandomForestC(tuned_max_depth,tuned_min_samples_split,ntrees,X_train, X_test, Y_train , Y_test)
-
 
 	return score,ntrees
 
